@@ -1,0 +1,46 @@
+{
+  "name": "onenova",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Saurabh Ahuja — personal engineering portfolio at onenova.in",
+  "author": "Saurabh Ahuja <saurabh@onenova.in>",
+  "license": "MIT",
+  "homepage": "https://onenova.in",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saurabhahuja71/onenova.git"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "build:fast": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro",
+    "format": "prettier --write .",
+    "lint": "astro check",
+    "verify": "bash deploy/scripts/verify-local.sh"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/rss": "^4.0.11",
+    "@astrojs/sitemap": "^3.2.1",
+    "@astrojs/tailwind": "^5.1.4",
+    "astro": "^5.1.1",
+    "sharp": "^0.33.5",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "prettier": "^3.4.2",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.6.9"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

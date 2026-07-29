@@ -1,0 +1,242 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Hero from '@components/Hero.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+import SkillIcon from '@components/SkillIcon.astro';
+import ProjectCard from '@components/ProjectCard.astro';
+import BlogCard from '@components/BlogCard.astro';
+import Timeline from '@components/Timeline.astro';
+import GitHubStats from '@components/GitHubStats.astro';
+import Newsletter from '@components/Newsletter.astro';
+import { skills } from '@data/skills';
+import { experience } from '@data/experience';
+import { certifications, achievements } from '@data/certifications';
+import { siteConfig } from '@data/site';
+import { fetchGitHubRepos, fetchGitHubUser, fetchContributionGraph } from '@lib/github';
+
+const [projects, stats, contributions, posts] = await Promise.all([
+  fetchGitHubRepos(6),
+  fetchGitHubUser(),
+  fetchContributionGraph(),
+  getCollection('blog', ({ data }) => !data.draft),
+]);
+
+const latestPosts = posts
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const featuredSkills = skills.slice(0, 8);
+const latestExp = experience.slice(0, 1);
+---
+
+<BaseLayout>
+  <Hero />
+
+  <!-- About teaser -->
+  <section class="section border-t border-slate-200/80 dark:border-slate-800/80" id="about">
+    <div class="container-page">
+      <div class="grid items-center gap-10 lg:grid-cols-2">
+        <div>
+          <SectionHeading
+            eyebrow="About"
+            title="Principal Engineer · Cloud & Infrastructure"
+            subtitle="15+ years designing boring but dependable systems across public cloud, private cloud, and on-prem."
+          />
+          <p class="mt-6 text-slate-600 dark:text-slate-400 leading-relaxed">
+            At <strong class="text-slate-900 dark:text-white">{siteConfig.author.company}</strong>
+            ({siteConfig.author.team}), I work on Kubernetes operators, Oracle Database lifecycle automation,
+            containers on Oracle Linux, and cloud infrastructure on OCI. I value long-term stability, clear boundaries,
+            and sustainable engineering over hype.
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="/profile" class="btn-primary">Full profile</a>
+            <a href="/learning-path" class="btn-secondary">Learning path</a>
+            <a href="/about" class="btn-ghost">About</a>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="card">
+            <p class="text-3xl font-bold gradient-text">K8s</p>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Operators & control planes</p>
+          </div>
+          <div class="card">
+            <p class="text-3xl font-bold gradient-text">Go</p>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Systems & microservices</p>
+          </div>
+          <div class="card">
+            <p class="text-3xl font-bold gradient-text">Data</p>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Oracle · Postgres · Redis</p>
+          </div>
+          <div class="card">
+            <p class="text-3xl font-bold gradient-text">Cloud</p>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">OCI · Terraform · Linux</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Experience -->
+  <section class="section bg-slate-50/80 dark:bg-slate-900/30" id="experience">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Experience"
+        title="Where I work"
+        subtitle="Principal Member of Technical Staff at Oracle — RACPACK MAA Solution Engineering."
+      />
+      <div class="mt-10">
+        <Timeline items={latestExp} />
+      </div>
+      <div class="mt-8">
+        <a href="/experience" class="btn-secondary">Full experience →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills -->
+  <section class="section" id="skills">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Skills"
+        title="Tools I use daily"
+        subtitle="A focused stack for cloud-native backends and platforms."
+      />
+      <div class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {featuredSkills.map((skill) => <SkillIcon skill={skill} />)}
+      </div>
+      <div class="mt-8">
+        <a href="/skills" class="btn-secondary">All skills →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects -->
+  <section class="section bg-slate-50/80 dark:bg-slate-900/30" id="projects">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Projects"
+        title="Selected work"
+        subtitle="Oracle open source, teaching labs, and public repositories from @saurabhahuja71."
+      />
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {projects.slice(0, 6).map((p) => <ProjectCard project={p} />)}
+      </div>
+      <div class="mt-8">
+        <a href="/projects" class="btn-secondary">All projects →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- GitHub stats -->
+  <section class="section">
+    <div class="container-page">
+      <GitHubStats stats={stats} contributions={contributions} />
+    </div>
+  </section>
+
+  <!-- Certifications teaser -->
+  <section class="section bg-slate-50/80 dark:bg-slate-900/30" id="certs">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Credentials"
+        title="Certifications & achievements"
+        subtitle="Professional certifications and highlights. Edit src/data/certifications.ts to personalize."
+      />
+      <div class="mt-10 grid gap-4 md:grid-cols-3">
+        {
+          certifications.slice(0, 3).map((c) => (
+            <article class="card card-hover">
+              <p class="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">{c.issuer}</p>
+              <h3 class="mt-2 font-semibold text-slate-900 dark:text-white">{c.title}</h3>
+              <p class="mt-1 text-xs text-slate-500">{c.date}</p>
+              {c.description && <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">{c.description}</p>}
+            </article>
+          ))
+        }
+      </div>
+      <ul class="mt-8 space-y-3">
+        {
+          achievements.slice(0, 2).map((a) => (
+            <li class="flex gap-3 text-sm text-slate-600 dark:text-slate-400">
+              <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+              <span>
+                <strong class="text-slate-900 dark:text-white">{a.title}</strong>
+                {a.org && ` · ${a.org}`} — {a.description}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-8">
+        <a href="/certifications" class="btn-secondary">All certifications →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Learning path teaser -->
+  <section class="section" id="learning">
+    <div class="container-page">
+      <div class="card flex flex-col gap-6 p-8 sm:flex-row sm:items-center sm:justify-between">
+        <div class="max-w-xl">
+          <p class="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+            For students & new engineers
+          </p>
+          <h2 class="mt-2 text-2xl font-bold">Learning path</h2>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Curated practice labs — Go, Python, Java/Helidon, Kubernetes, Terraform, CI/CD, AI/MCP, and Oracle Linux.
+            A readable copy of the GitHub hub lives on this site.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="/learning-path" class="btn-primary">Open learning path</a>
+          <a
+            href={siteConfig.social.learningPath}
+            class="btn-secondary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub repo
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog -->
+  <section class="section bg-slate-50/80 dark:bg-slate-900/30" id="blog">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Blog"
+        title="Writing"
+        subtitle="Notes on Kubernetes, Go, Oracle, AI, and platform engineering."
+      />
+      <div class="mt-10 grid gap-6 md:grid-cols-3">
+        {latestPosts.map((post) => <BlogCard post={post} />)}
+      </div>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/blog" class="btn-secondary">All posts →</a>
+        <a href="/rss.xml" class="btn-ghost">RSS feed</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter + Contact CTA -->
+  <section class="section bg-slate-50/80 dark:bg-slate-900/30">
+    <div class="container-page space-y-8">
+      <Newsletter />
+      <div class="card flex flex-col items-start justify-between gap-6 p-8 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="text-2xl font-bold">Let’s talk</h2>
+          <p class="mt-2 text-slate-600 dark:text-slate-400">
+            Interested in collaboration, speaking, or platform engineering discussions?
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="/contact" class="btn-primary">Contact</a>
+          <a href={siteConfig.social.email} class="btn-secondary">Email Me</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

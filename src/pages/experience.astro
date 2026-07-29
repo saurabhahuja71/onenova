@@ -1,0 +1,36 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+import Timeline from '@components/Timeline.astro';
+import { experience } from '@data/experience';
+import { siteConfig } from '@data/site';
+---
+
+<BaseLayout
+  title="Experience"
+  description={`Work experience for ${siteConfig.author.name} — ${siteConfig.author.role} at Oracle.`}
+>
+  <section class="section">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Experience"
+        title="Career timeline"
+        subtitle="Roles focused on Kubernetes, databases, cloud infrastructure, and distributed systems."
+      />
+
+      <div class="mt-10">
+        <Timeline items={experience} />
+      </div>
+
+      <div class="mt-12 card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-slate-600 dark:text-slate-400">
+          Prefer a single document? Download the PDF resume or view the dedicated resume page.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href={siteConfig.links.resume} class="btn-primary" download>Download PDF</a>
+          <a href="/resume" class="btn-secondary">Resume page</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

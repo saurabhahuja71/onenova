@@ -1,0 +1,37 @@
+# build
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+Thumbs.db
+
+# test / coverage
+coverage/
+.nyc_output/
+
+# misc
+*.local
+.cache/
+tmp/
+.turbo/

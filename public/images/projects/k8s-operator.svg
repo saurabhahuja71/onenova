@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" fill="none">
+  <rect width="640" height="360" fill="#0b1220"/>
+  <circle cx="320" cy="180" r="70" stroke="#326CE5" stroke-width="8" fill="none"/>
+  <circle cx="320" cy="180" r="28" fill="#326CE5"/>
+  <g stroke="#326CE5" stroke-width="6" stroke-linecap="round">
+    <line x1="320" y1="90" x2="320" y2="40"/>
+    <line x1="320" y1="270" x2="320" y2="320"/>
+    <line x1="230" y1="180" x2="180" y2="180"/>
+    <line x1="410" y1="180" x2="460" y2="180"/>
+    <line x1="256" y1="116" x2="220" y2="80"/>
+    <line x1="384" y1="244" x2="420" y2="280"/>
+    <line x1="384" y1="116" x2="420" y2="80"/>
+    <line x1="256" y1="244" x2="220" y2="280"/>
+  </g>
+  <text x="320" y="340" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="16">Kubernetes Operator</text>
+</svg>

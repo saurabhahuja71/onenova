@@ -1,0 +1,149 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+import Timeline from '@components/Timeline.astro';
+import { experience, education } from '@data/experience';
+import { skills } from '@data/skills';
+import { certifications } from '@data/certifications';
+import { siteConfig } from '@data/site';
+---
+
+<BaseLayout
+  title="Resume"
+  description={`Resume of ${siteConfig.author.name} — downloadable PDF and HTML version.`}
+>
+  <section class="section">
+    <div class="container-page">
+      <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <SectionHeading
+          eyebrow="Resume"
+          title={siteConfig.author.name}
+          subtitle={`${siteConfig.author.role} · ${siteConfig.author.company}`}
+        />
+        <div class="flex flex-wrap gap-3">
+          <a href={siteConfig.links.resume} class="btn-primary" download>
+            Download PDF
+          </a>
+          <a href={siteConfig.social.email} class="btn-secondary">Email Me</a>
+          <button type="button" class="btn-ghost" onclick="window.print()">Print</button>
+        </div>
+      </div>
+
+      <!-- PDF embed / download card -->
+      <div class="mt-10 card overflow-hidden p-0">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50">
+          <p class="text-sm font-medium">PDF preview</p>
+          <a href={siteConfig.links.resume} class="text-sm text-brand-600 hover:underline dark:text-brand-400" download>
+            Saurabh_Ahuja_Resume.pdf
+          </a>
+        </div>
+        <div class="bg-slate-100 dark:bg-slate-900">
+          <object
+            data={siteConfig.links.resume}
+            type="application/pdf"
+            class="h-[70vh] w-full min-h-[480px]"
+            aria-label="Resume PDF"
+          >
+            <div class="flex flex-col items-center justify-center gap-4 p-12 text-center">
+              <p class="text-slate-600 dark:text-slate-400">
+                PDF preview is unavailable in this browser.
+              </p>
+              <a href={siteConfig.links.resume} class="btn-primary" download>Download resume PDF</a>
+              <p class="max-w-md text-xs text-slate-500">
+                Place your file at <code>public/resume/Saurabh_Ahuja_Resume.pdf</code>. A placeholder PDF ships with the repo until you replace it.
+              </p>
+            </div>
+          </object>
+        </div>
+      </div>
+
+      <!-- HTML resume for accessibility / SEO / print -->
+      <div class="mt-16 print:mt-0" id="html-resume">
+        <header class="border-b border-slate-200 pb-6 dark:border-slate-800">
+          <h2 class="text-2xl font-bold">{siteConfig.author.name}</h2>
+          <p class="mt-1 text-slate-600 dark:text-slate-400">
+            {siteConfig.author.role} · {siteConfig.author.company}
+          </p>
+          <p class="mt-2 text-sm text-slate-500">
+            <a href={siteConfig.social.email}>{siteConfig.author.email}</a>
+            ·
+            <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+            ·
+            <a href={siteConfig.social.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            ·
+            <a href={siteConfig.url}>{siteConfig.url.replace('https://', '')}</a>
+          </p>
+          <p class="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            {siteConfig.description}
+          </p>
+        </header>
+
+        <div class="mt-10">
+          <h3 class="text-lg font-semibold">Experience</h3>
+          <div class="mt-6">
+            <Timeline items={experience} />
+          </div>
+        </div>
+
+        <div class="mt-12">
+          <h3 class="text-lg font-semibold">Skills</h3>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {skills.map((s) => <span class="chip">{s.name}</span>)}
+          </div>
+        </div>
+
+        <div class="mt-12">
+          <h3 class="text-lg font-semibold">Education</h3>
+          <div class="mt-4 space-y-4">
+            {
+              education.map((ed) => (
+                <div class="card">
+                  <p class="font-semibold">
+                    {ed.degree}, {ed.field}
+                  </p>
+                  <p class="text-sm text-slate-600 dark:text-slate-400">
+                    {ed.school} · {ed.start} — {ed.end}
+                  </p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="mt-12">
+          <h3 class="text-lg font-semibold">Certifications</h3>
+          <ul class="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            {
+              certifications.map((c) => (
+                <li>
+                  <strong class="text-slate-900 dark:text-white">{c.title}</strong> — {c.issuer} ({c.date})
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style is:global>
+  @media print {
+    header,
+    footer,
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-ghost,
+    button {
+      display: none !important;
+    }
+    main {
+      padding: 0 !important;
+    }
+    .card {
+      break-inside: avoid;
+      box-shadow: none !important;
+    }
+  }
+</style>

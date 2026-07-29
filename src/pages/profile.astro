@@ -1,0 +1,38 @@
+---
+import { getEntry, render } from 'astro:content';
+import DocLayout from '@layouts/DocLayout.astro';
+import { siteConfig } from '@data/site';
+
+const entry = await getEntry('docs', 'profile');
+if (!entry) {
+  throw new Error('Missing content: src/content/docs/profile.md');
+}
+const { Content } = await render(entry);
+---
+
+<DocLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  source={entry.data.source || siteConfig.social.githubPages}
+  sourceLabel="GitHub profile repo"
+>
+  <Content />
+
+  <aside class="not-prose mt-12 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50">
+    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">On this site</h2>
+    <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+      This page is a maintained copy of the public profile at
+      <a class="text-brand-600 hover:underline dark:text-brand-400" href={siteConfig.social.githubPages} target="_blank" rel="noopener noreferrer">
+        saurabhahuja71.github.io
+      </a>
+      . Explore more:
+    </p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <a href="/learning-path" class="btn-primary text-sm">Learning path</a>
+      <a href="/projects" class="btn-secondary text-sm">Projects</a>
+      <a href="/experience" class="btn-secondary text-sm">Experience</a>
+      <a href="/resume" class="btn-ghost text-sm">Resume</a>
+      <a href="/contact" class="btn-ghost text-sm">Contact</a>
+    </div>
+  </aside>
+</DocLayout>

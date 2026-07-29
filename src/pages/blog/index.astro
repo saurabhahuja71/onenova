@@ -1,0 +1,179 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+import BlogCard from '@components/BlogCard.astro';
+import Newsletter from '@components/Newsletter.astro';
+import { slugify } from '@lib/utils';
+import { readingTime } from '@lib/reading-time';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const allTags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+
+// Serializable index for client-side search (static SSG has no request-time query params)
+const searchIndex = posts.map((p) => ({
+  slug: p.id,
+  title: p.data.title,
+  description: p.data.description,
+  tags: p.data.tags,
+  pubDate: p.data.pubDate.toISOString(),
+  featured: p.data.featured,
+  reading: readingTime(p.body ?? '').text,
+  body: (p.body ?? '').slice(0, 2000),
+}));
+---
+
+<BaseLayout
+  title="Blog"
+  description="Technical writing on Kubernetes, Go, Oracle Database, cloud infrastructure, observability, and AI."
+>
+  <section class="section">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Blog"
+        title="Technical notes"
+        subtitle="Deep dives and field notes from platform and backend engineering."
+      />
+
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <label class="sr-only" for="blog-search">Search posts</label>
+        <input
+          id="blog-search"
+          type="search"
+          placeholder="Search posts, tags…"
+          autocomplete="off"
+          class="w-full max-w-md rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
+        />
+        <button type="button" id="blog-search-clear" class="btn-ghost hidden">Clear</button>
+        <a href="/rss.xml" class="btn-ghost sm:ml-auto">RSS</a>
+      </div>
+
+      {
+        allTags.length > 0 && (
+          <div class="mt-6 flex flex-wrap gap-2">
+            {allTags.map((tag) => (
+              <a href={`/blog/tags/${slugify(tag)}`} class="chip hover:border-brand-400">
+                #{tag}
+              </a>
+            ))}
+          </div>
+        )
+      }
+
+      <p id="blog-search-status" class="mt-6 hidden text-sm text-slate-500" role="status"></p>
+
+      <div id="blog-grid" class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => <BlogCard post={post} />)}
+      </div>
+
+      <div id="blog-empty" class="mt-12 hidden text-slate-600 dark:text-slate-400">
+        No posts match your search.
+      </div>
+
+      <div class="mt-16">
+        <Newsletter compact />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script define:vars={{ searchIndex }}>
+  const input = document.getElementById('blog-search');
+  const clearBtn = document.getElementById('blog-search-clear');
+  const grid = document.getElementById('blog-grid');
+  const empty = document.getElementById('blog-empty');
+  const status = document.getElementById('blog-search-status');
+  if (!input || !grid) {
+    // no-op
+  } else {
+    function formatDateLocal(iso) {
+      try {
+        return new Date(iso).toLocaleDateString('en-IN', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+      } catch {
+        return iso;
+      }
+    }
+
+    function cardHTML(p) {
+      const tags = (p.tags || [])
+        .map(
+          (t) =>
+            `<a href="/blog/tags/${t.toLowerCase().replace(/[^\w]+/g, '-')}" class="chip hover:border-brand-400 hover:text-brand-700 dark:hover:text-brand-300">#${t}</a>`,
+        )
+        .join('');
+      return `<article class="card card-hover flex h-full flex-col">
+        <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <time datetime="${p.pubDate}">${formatDateLocal(p.pubDate)}</time>
+          <span aria-hidden="true">·</span>
+          <span>${p.reading}</span>
+          ${p.featured ? '<span aria-hidden="true">·</span><span class="font-semibold text-brand-600 dark:text-brand-400">Featured</span>' : ''}
+        </div>
+        <h3 class="mt-3 text-xl font-semibold text-slate-900 dark:text-white">
+          <a href="/blog/${p.slug}" class="hover:text-brand-600 dark:hover:text-brand-400">${p.title}</a>
+        </h3>
+        <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">${p.description}</p>
+        <div class="mt-4 flex flex-wrap gap-2">${tags}</div>
+      </article>`;
+    }
+
+    function run() {
+      const q = input.value.trim().toLowerCase();
+      clearBtn?.classList.toggle('hidden', !q);
+      const results = !q
+        ? searchIndex
+        : searchIndex.filter(
+            (p) =>
+              p.title.toLowerCase().includes(q) ||
+              p.description.toLowerCase().includes(q) ||
+              p.tags.some((t) => t.toLowerCase().includes(q)) ||
+              p.body.toLowerCase().includes(q),
+          );
+
+      if (!q) {
+        // Restore server-rendered cards by reloading is heavy; re-render from index instead
+        grid.innerHTML = results.map(cardHTML).join('');
+        empty?.classList.add('hidden');
+        status?.classList.add('hidden');
+        return;
+      }
+
+      if (results.length === 0) {
+        grid.innerHTML = '';
+        empty?.classList.remove('hidden');
+        if (status) {
+          status.textContent = `No results for “${input.value.trim()}”`;
+          status.classList.remove('hidden');
+        }
+      } else {
+        empty?.classList.add('hidden');
+        grid.innerHTML = results.map(cardHTML).join('');
+        if (status) {
+          status.textContent = `${results.length} result${results.length === 1 ? '' : 's'} for “${input.value.trim()}”`;
+          status.classList.remove('hidden');
+        }
+      }
+    }
+
+    input.addEventListener('input', run);
+    clearBtn?.addEventListener('click', () => {
+      input.value = '';
+      run();
+      input.focus();
+    });
+
+    // Support ?q= deep links (client-side after hydration)
+    const params = new URLSearchParams(window.location.search);
+    const initial = params.get('q');
+    if (initial) {
+      input.value = initial;
+      run();
+    }
+  }
+</script>

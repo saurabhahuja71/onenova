@@ -1,0 +1,35 @@
+---
+import type { Skill } from '@data/skills';
+
+interface Props {
+  skill: Skill;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const { skill, size = 'md' } = Astro.props;
+
+const sizeClass =
+  size === 'sm' ? 'h-10 w-10 text-[10px]' : size === 'lg' ? 'h-16 w-16 text-sm' : 'h-12 w-12 text-xs';
+---
+
+<div
+  class:list={['card card-hover flex flex-col items-center gap-3 p-4 text-center', size === 'lg' && 'p-5']}
+  title={skill.description || skill.name}
+>
+  <div
+    class:list={[
+      'flex items-center justify-center rounded-2xl font-bold text-white shadow-sm',
+      sizeClass,
+    ]}
+    style={`background: linear-gradient(135deg, ${skill.color}, color-mix(in srgb, ${skill.color} 70%, #000));`}
+    aria-hidden="true"
+  >
+    {skill.icon}
+  </div>
+  <div>
+    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{skill.name}</p>
+    {skill.level && (
+      <p class="mt-0.5 text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{skill.level}</p>
+    )}
+  </div>
+</div>

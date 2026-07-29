@@ -1,0 +1,20 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" description="The page you requested does not exist." noindex>
+  <section class="section">
+    <div class="container-page max-w-xl text-center">
+      <p class="text-sm font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">404</p>
+      <h1 class="mt-3 text-4xl font-bold">Page not found</h1>
+      <p class="mt-4 text-slate-600 dark:text-slate-400">
+        That URL does not exist on onenova.in. Try the home page or browse the blog.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href="/" class="btn-primary">Home</a>
+        <a href="/blog" class="btn-secondary">Blog</a>
+        <a href="/contact" class="btn-ghost">Contact</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

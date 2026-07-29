@@ -1,0 +1,104 @@
+# Deploy onenova.in from a self-hosted GitHub Actions runner (GCP VM).
+# Flow: push → checkout → install → build Astro → rsync to /var/www/onenova → reload nginx
+name: Deploy OneNova
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-onenova
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+  WEB_ROOT: /var/www/onenova
+  PUBLIC_SITE_URL: https://onenova.in
+  PUBLIC_GITHUB_USERNAME: saurabhahuja71
+
+jobs:
+  deploy:
+    name: Build & deploy (self-hosted)
+    runs-on: self-hosted
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+        continue-on-error: true
+
+      - name: Ensure Node / pnpm available
+        shell: bash
+        run: |
+          set -euo pipefail
+          export NVM_DIR="${HOME}/.nvm"
+          if [[ -s "${NVM_DIR}/nvm.sh" ]]; then
+            # shellcheck disable=SC1090
+            . "${NVM_DIR}/nvm.sh"
+            nvm install 20 >/dev/null 2>&1 || true
+            nvm use 20 >/dev/null 2>&1 || true
+          fi
+          command -v node
+          node -v
+          if ! command -v pnpm >/dev/null 2>&1; then
+            corepack enable || true
+            corepack prepare pnpm@9.15.0 --activate || npm install -g pnpm@9.15.0
+          fi
+          pnpm -v
+          echo "PATH=$PATH" >> "$GITHUB_ENV"
+          # Persist nvm path for subsequent steps when setup-node is unavailable
+          if [[ -n "${NVM_DIR:-}" && -d "${NVM_DIR}/versions/node" ]]; then
+            NODE_BIN="$(dirname "$(command -v node)")"
+            echo "${NODE_BIN}" >> "$GITHUB_PATH"
+            echo "$(dirname "$(command -v pnpm)")" >> "$GITHUB_PATH"
+          fi
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          export NVM_DIR="${HOME}/.nvm"
+          [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
+          pnpm install --frozen-lockfile || pnpm install
+
+      - name: Build Astro site
+        shell: bash
+        env:
+          # Optional: higher GitHub API rate limits + contribution graph
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PERSONAL_GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+          PUBLIC_GITHUB_USERNAME: ${{ env.PUBLIC_GITHUB_USERNAME }}
+          PUBLIC_FORMSPREE_ID: ${{ secrets.PUBLIC_FORMSPREE_ID }}
+          PUBLIC_SITE_URL: ${{ env.PUBLIC_SITE_URL }}
+        run: |
+          export NVM_DIR="${HOME}/.nvm"
+          [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
+          pnpm run build:fast
+
+      - name: Deploy to /var/www/onenova
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x deploy/scripts/deploy.sh
+          WEB_ROOT="${WEB_ROOT}" DIST_DIR=dist ./deploy/scripts/deploy.sh
+
+      - name: Health check (local)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "${WEB_ROOT}/index.html"
+          # Prefer localhost HTTP; SSL may use SNI for public host
+          if curl -fsS -o /dev/null -w "%{http_code}" http://127.0.0.1/ | grep -qE '200|301|302'; then
+            echo "Local HTTP OK"
+          else
+            echo "WARN: local HTTP check inconclusive (nginx may only listen on public interfaces)"
+          fi
+          ls -la "${WEB_ROOT}" | head -15

@@ -1,0 +1,77 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+import { certifications, achievements } from '@data/certifications';
+---
+
+<BaseLayout
+  title="Certifications"
+  description="Professional certifications and achievements — Kubernetes, Oracle Cloud, and more."
+>
+  <section class="section">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Credentials"
+        title="Publications & achievements"
+        subtitle="Official Oracle product documentation, architecture whitepapers, and open-source highlights."
+      />
+
+      <div class="mt-10 grid gap-5 md:grid-cols-2">
+        {
+          certifications.map((c) => (
+            <article class="card card-hover">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">
+                    {c.issuer}
+                  </p>
+                  <h2 class="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{c.title}</h2>
+                </div>
+                <time class="chip shrink-0">{c.date}</time>
+              </div>
+              {c.description && (
+                <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">{c.description}</p>
+              )}
+              {c.credentialId && (
+                <p class="mt-2 text-xs text-slate-500">Credential ID: {c.credentialId}</p>
+              )}
+              {c.url && (
+                <a
+                  href={c.url}
+                  class="mt-4 inline-flex text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Verify / learn more →
+                </a>
+              )}
+            </article>
+          ))
+        }
+      </div>
+
+      <div class="mt-16">
+        <h2 class="text-2xl font-bold">Achievements</h2>
+        <ol class="mt-6 space-y-4">
+          {
+            achievements.map((a) => (
+              <li class="card flex gap-4">
+                <span class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                  ★
+                </span>
+                <div>
+                  <div class="flex flex-wrap items-baseline gap-2">
+                    <h3 class="font-semibold text-slate-900 dark:text-white">{a.title}</h3>
+                    <span class="text-xs text-slate-500">{a.date}</span>
+                    {a.org && <span class="chip">{a.org}</span>}
+                  </div>
+                  <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{a.description}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

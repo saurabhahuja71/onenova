@@ -1,0 +1,102 @@
+---
+import { siteConfig } from '@data/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-surface-950">
+  <div class="container-page py-12">
+    <div class="grid gap-10 md:grid-cols-4">
+      <div class="md:col-span-2">
+        <a href="/" class="inline-flex items-center gap-2 font-semibold">
+          <span
+            class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-sky-400 text-xs font-bold text-white"
+          >
+            ON
+          </span>
+          {siteConfig.shortName}
+        </a>
+        <p class="mt-3 max-w-md text-sm text-slate-600 dark:text-slate-400">
+          {siteConfig.footer.tagline}
+          <br />
+          {siteConfig.author.role} @ {siteConfig.author.company}
+        </p>
+        <p class="mt-4 text-xs text-slate-500" id="visitor-counter" data-visitor-counter>
+          <!-- Populated client-side when network allows -->
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Explore</h2>
+        <ul class="mt-3 space-y-2 text-sm">
+          {
+            siteConfig.nav.map((item) => (
+              <li>
+                <a class="text-slate-700 hover:text-brand-600 dark:text-slate-300 dark:hover:text-brand-400" href={item.href}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Connect</h2>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li>
+            <a class="text-slate-700 hover:text-brand-600 dark:text-slate-300" href={siteConfig.social.github} rel="noopener noreferrer" target="_blank">
+              GitHub
+            </a>
+          </li>
+          <li>
+            <a class="text-slate-700 hover:text-brand-600 dark:text-slate-300" href={siteConfig.social.linkedin} rel="noopener noreferrer" target="_blank">
+              LinkedIn
+            </a>
+          </li>
+          <li>
+            <a class="text-slate-700 hover:text-brand-600 dark:text-slate-300" href={siteConfig.social.email}>
+              {siteConfig.author.email}
+            </a>
+          </li>
+          <li>
+            <a class="text-slate-700 hover:text-brand-600 dark:text-slate-300" href="/rss.xml">RSS</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="mt-10 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500 dark:border-slate-800 sm:flex-row sm:items-center"
+    >
+      <p>© {year} {siteConfig.author.name}. All rights reserved.</p>
+      <p>
+        Built with <a class="underline decoration-slate-400 hover:text-brand-600" href="https://astro.build">Astro</a>
+        · Deployed via self-hosted GitHub Actions
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Lightweight visitor counter via free countapi-compatible endpoint (graceful no-op on failure).
+  // Uses a public counter key namespaced to onenova.in — replace with GoatCounter/Umami later if preferred.
+  (async () => {
+    const el = document.querySelector<HTMLElement>('[data-visitor-counter]');
+    if (!el) return;
+    try {
+      const res = await fetch('https://api.counterapi.dev/v1/onenova/site/up', {
+        method: 'GET',
+        mode: 'cors',
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { count?: number; value?: number };
+      const count = data.count ?? data.value;
+      if (typeof count === 'number') {
+        el.textContent = `${count.toLocaleString()} visits`;
+      }
+    } catch {
+      // offline / blocked — silent
+    }
+  })();
+</script>

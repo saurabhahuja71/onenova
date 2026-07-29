@@ -1,0 +1,49 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+import ProjectCard from '@components/ProjectCard.astro';
+import GitHubStats from '@components/GitHubStats.astro';
+import { fetchGitHubRepos, fetchGitHubUser, fetchContributionGraph } from '@lib/github';
+import { siteConfig } from '@data/site';
+
+const [projects, stats, contributions] = await Promise.all([
+  fetchGitHubRepos(18),
+  fetchGitHubUser(),
+  fetchContributionGraph(),
+]);
+---
+
+<BaseLayout
+  title="Projects"
+  description="Open-source and curated projects by Saurabh Ahuja — fetched from GitHub at build time with curated highlights."
+>
+  <section class="section">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Projects"
+        title="Things I've built"
+        subtitle="Public repositories are pulled automatically from GitHub during the static build. Curated cards fill gaps when the API is rate-limited."
+      />
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a
+          href={siteConfig.social.github}
+          class="btn-secondary"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub profile
+        </a>
+        <a href="/blog" class="btn-ghost">Related writing</a>
+      </div>
+
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {projects.map((p) => <ProjectCard project={p} />)}
+      </div>
+
+      <div class="mt-16">
+        <GitHubStats stats={stats} contributions={contributions} />
+      </div>
+    </div>
+  </section>
+</BaseLayout>

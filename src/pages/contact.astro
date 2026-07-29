@@ -1,0 +1,57 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+import ContactForm from '@components/ContactForm.astro';
+import { siteConfig } from '@data/site';
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Contact ${siteConfig.author.name} at ${siteConfig.author.email}.`}
+>
+  <section class="section">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Contact"
+        title="Get in touch"
+        subtitle="Email, socials, or the form below. Messages are not stored on this server."
+      />
+
+      <div class="mt-10 grid gap-10 lg:grid-cols-5">
+        <div class="space-y-4 lg:col-span-2">
+          <a href={siteConfig.social.email} class="card card-hover block">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p>
+            <p class="mt-2 font-semibold text-brand-600 dark:text-brand-400">{siteConfig.author.email}</p>
+          </a>
+          <a
+            href={siteConfig.social.github}
+            class="card card-hover block"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">GitHub</p>
+            <p class="mt-2 font-semibold">{siteConfig.social.githubUser}</p>
+          </a>
+          <a
+            href={siteConfig.social.linkedin}
+            class="card card-hover block"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">LinkedIn</p>
+            <p class="mt-2 font-semibold">Connect on LinkedIn</p>
+          </a>
+          <div class="card">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Location</p>
+            <p class="mt-2 font-semibold">{siteConfig.author.location}</p>
+            <p class="mt-1 text-sm text-slate-500">Open to remote collaboration</p>
+          </div>
+        </div>
+
+        <div class="lg:col-span-3">
+          <ContactForm />
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

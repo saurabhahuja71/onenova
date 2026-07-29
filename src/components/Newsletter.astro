@@ -1,0 +1,57 @@
+---
+/**
+ * Newsletter placeholder — static only.
+ * Wire to Buttondown / ConvertKit / Listmonk later without changing layout.
+ */
+interface Props {
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+---
+
+<section
+  class:list={[
+    'card relative overflow-hidden',
+    compact ? 'p-6' : 'p-8 sm:p-10',
+  ]}
+  aria-labelledby="newsletter-heading"
+>
+  <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-500/10 blur-3xl" aria-hidden="true"></div>
+  <div class:list={[compact ? '' : 'md:flex md:items-center md:justify-between md:gap-8']}>
+    <div class="max-w-xl">
+      <p class="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">Newsletter</p>
+      <h2 id="newsletter-heading" class:list={['font-bold tracking-tight', compact ? 'mt-1 text-xl' : 'mt-2 text-2xl sm:text-3xl']}>
+        Notes on Kubernetes, Go & platforms
+      </h2>
+      <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+        Occasional deep-dives on operators, databases, cloud infrastructure, and AI for platform teams.
+        No spam — unsubscribe anytime. <span class="italic">(Coming soon)</span>
+      </p>
+    </div>
+
+    <form
+      class="mt-6 flex w-full max-w-md flex-col gap-2 sm:flex-row md:mt-0"
+      action="#"
+      method="post"
+      onsubmit="event.preventDefault(); const n=this.querySelector('[data-note]'); if(n){n.hidden=false;}"
+    >
+      <label class="sr-only" for="newsletter-email">Email address</label>
+      <input
+        id="newsletter-email"
+        name="email"
+        type="email"
+        required
+        autocomplete="email"
+        placeholder="you@company.com"
+        class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none ring-brand-500 placeholder:text-slate-400 focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+      />
+      <button type="submit" class="btn-primary shrink-0" disabled title="Newsletter not enabled yet">
+        Notify me
+      </button>
+    </form>
+  </div>
+  <p class="mt-3 hidden text-xs text-slate-500" data-note role="status">
+    Thanks — this form is a placeholder. Wire it to Buttondown, ConvertKit, or your ESP when ready.
+  </p>
+</section>

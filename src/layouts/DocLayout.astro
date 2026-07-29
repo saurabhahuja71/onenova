@@ -1,0 +1,105 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { siteConfig } from '@data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  source?: string;
+  sourceLabel?: string;
+}
+
+const {
+  title,
+  description,
+  source,
+  sourceLabel = 'View on GitHub',
+} = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="section">
+    <div class="container-page max-w-4xl">
+      <header class="mb-10 border-b border-slate-200 pb-8 dark:border-slate-800">
+        <p class="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+          Engineering profile
+        </p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
+        <p class="mt-3 max-w-2xl text-slate-600 dark:text-slate-400">{description}</p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          {
+            source && (
+              <a href={source} class="btn-secondary text-sm" target="_blank" rel="noopener noreferrer">
+                {sourceLabel}
+              </a>
+            )
+          }
+          <a href={siteConfig.social.github} class="btn-ghost text-sm" target="_blank" rel="noopener noreferrer">
+            @{siteConfig.social.githubUser}
+          </a>
+          <a href="/contact" class="btn-ghost text-sm">Contact</a>
+        </div>
+      </header>
+
+      <div class="prose-onenova prose doc-prose">
+        <slot />
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style is:global>
+  .doc-prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    display: block;
+    overflow-x: auto;
+    margin: 1.25em 0;
+  }
+  .doc-prose th,
+  .doc-prose td {
+    border: 1px solid rgb(226 232 240);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  .dark .doc-prose th,
+  .dark .doc-prose td {
+    border-color: rgb(51 65 85);
+  }
+  .doc-prose th {
+    background: rgb(248 250 252);
+    font-weight: 600;
+  }
+  .dark .doc-prose th {
+    background: rgb(15 23 42);
+  }
+  .doc-prose hr {
+    border: 0;
+    border-top: 1px solid rgb(226 232 240);
+    margin: 2rem 0;
+  }
+  .dark .doc-prose hr {
+    border-color: rgb(51 65 85);
+  }
+  .doc-prose img {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0.15rem 0.25rem 0.15rem 0;
+  }
+  .doc-prose blockquote {
+    border-left: 3px solid rgb(51 139 255);
+    padding-left: 1rem;
+    font-style: italic;
+    opacity: 0.95;
+  }
+  .doc-prose h2 {
+    margin-top: 2rem;
+    scroll-margin-top: 5rem;
+  }
+  .doc-prose h3 {
+    margin-top: 1.5rem;
+    scroll-margin-top: 5rem;
+  }
+</style>

@@ -1,0 +1,98 @@
+---
+import { siteConfig } from '@data/site';
+import ThemeToggle from './ThemeToggle.astro';
+
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+function isActive(href: string) {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(href + '/');
+}
+---
+
+<header
+  class="sticky top-0 z-50 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl dark:border-slate-800/80 dark:bg-surface-950/75"
+>
+  <div class="container-page flex h-16 items-center justify-between gap-4">
+    <a href="/" class="group flex items-center gap-2.5 font-semibold tracking-tight" aria-label="Home">
+      <span
+        class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-sky-400 text-sm font-bold text-white shadow-glow"
+      >
+        ON
+      </span>
+      <span class="hidden sm:inline">
+        <span class="text-slate-900 dark:text-white">{siteConfig.shortName}</span>
+        <span class="ml-1 text-xs font-normal text-slate-500 dark:text-slate-400">.in</span>
+      </span>
+    </a>
+
+    <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
+      {
+        siteConfig.nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              isActive(item.href)
+                ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+            ]}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-1">
+      <ThemeToggle />
+      <a href="/contact" class="btn-primary hidden sm:inline-flex">Hire me</a>
+      <button
+        type="button"
+        id="mobile-menu-btn"
+        class="btn-ghost rounded-xl p-2 lg:hidden"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" class="hidden border-t border-slate-200 dark:border-slate-800 lg:hidden" hidden>
+    <nav class="container-page flex flex-col gap-1 py-3" aria-label="Mobile">
+      {
+        siteConfig.nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'rounded-lg px-3 py-2.5 text-sm font-medium',
+              isActive(item.href)
+                ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300'
+                : 'text-slate-700 dark:text-slate-200',
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+      <a href="/contact" class="btn-primary mt-2">Hire me</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  if (btn && menu) {
+    btn.addEventListener('click', () => {
+      const open = menu.classList.toggle('hidden') === false;
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  }
+</script>

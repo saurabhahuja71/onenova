@@ -1,0 +1,53 @@
+---
+import { getEntry, render } from 'astro:content';
+import DocLayout from '@layouts/DocLayout.astro';
+import { siteConfig } from '@data/site';
+
+const entry = await getEntry('docs', 'learning-path');
+if (!entry) {
+  throw new Error('Missing content: src/content/docs/learning-path.md');
+}
+const { Content } = await render(entry);
+---
+
+<DocLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  source={entry.data.source || siteConfig.social.learningPath}
+  sourceLabel="GitHub learning-path repo"
+>
+  <p class="not-prose mb-8 rounded-xl border border-brand-200 bg-brand-50/80 px-4 py-3 text-sm text-brand-900 dark:border-brand-900/40 dark:bg-brand-950/40 dark:text-brand-100">
+    Hands-on labs for college students and new engineers. Source of truth:
+    <a
+      class="font-semibold underline"
+      href={siteConfig.social.learningPath}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      github.com/saurabhahuja71/learning-path
+    </a>
+    . This page is a readable copy on onenova.in.
+  </p>
+
+  <Content />
+
+  <aside class="not-prose mt-12 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50">
+    <h2 class="text-lg font-semibold">Next steps</h2>
+    <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-slate-400">
+      <li>Open a lab repo, read its README, follow <strong>Quick start</strong>.</li>
+      <li>Prefer building something small of your own after each lab.</li>
+      <li>
+        Questions or stuck?
+        <a class="text-brand-600 hover:underline dark:text-brand-400" href="/contact">Contact</a>
+        or open an issue on the lab repo.
+      </li>
+    </ul>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <a href={siteConfig.social.learningPath} class="btn-primary text-sm" target="_blank" rel="noopener noreferrer">
+        Open on GitHub
+      </a>
+      <a href="/profile" class="btn-secondary text-sm">Full profile</a>
+      <a href="/projects" class="btn-ghost text-sm">All projects</a>
+    </div>
+  </aside>
+</DocLayout>

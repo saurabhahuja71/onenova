@@ -1,0 +1,30 @@
+# Optional CI for pull requests — runs on self-hosted when available.
+# Safe to delete if you only care about main-branch deploys.
+name: CI
+
+on:
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build check
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install & build
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLIC_GITHUB_USERNAME: saurabhahuja71
+        run: |
+          set -euo pipefail
+          export NVM_DIR="${HOME}/.nvm"
+          [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
+          command -v pnpm || { corepack enable; corepack prepare pnpm@9.15.0 --activate || npm i -g pnpm@9.15.0; }
+          pnpm install --frozen-lockfile || pnpm install
+          pnpm run build:fast

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" fill="none">
+  <rect width="640" height="360" fill="#020617"/>
+  <rect x="100" y="70" width="440" height="220" rx="16" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
+  <rect x="120" y="100" width="120" height="16" rx="4" fill="#338bff"/>
+  <rect x="120" y="140" width="280" height="10" rx="3" fill="#334155"/>
+  <rect x="120" y="165" width="240" height="10" rx="3" fill="#334155"/>
+  <rect x="120" y="210" width="90" height="32" rx="8" fill="#1a6af5"/>
+  <rect x="230" y="210" width="90" height="32" rx="8" stroke="#475569" stroke-width="2"/>
+  <text x="320" y="330" text-anchor="middle" fill="#94a3b8" font-family="Inter,sans-serif" font-size="16">onenova.in</text>
+</svg>

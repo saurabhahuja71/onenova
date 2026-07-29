@@ -1,0 +1,87 @@
+---
+import { siteConfig } from '@data/site';
+import Particles from './Particles.astro';
+---
+
+<section class="relative overflow-hidden section pt-12 sm:pt-16 lg:pt-20">
+  <Particles />
+  <div class="container-page relative">
+    <div class="mx-auto max-w-3xl text-center">
+      <p
+        class="animate-fade-in inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-brand-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-700 dark:border-brand-800 dark:bg-brand-950/50 dark:text-brand-300"
+      >
+        <span class="relative flex h-2 w-2">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+        </span>
+        Cloud · Infrastructure · Open source
+      </p>
+
+      <h1 class="animate-slide-up mt-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+        <span class="block text-slate-900 dark:text-white">{siteConfig.author.name}</span>
+        <span class="mt-2 block text-2xl font-semibold sm:text-3xl lg:text-4xl">
+          <span class="gradient-text">Principal Engineer</span>
+        </span>
+      </h1>
+
+      <p class="animate-slide-up animate-delay-100 mx-auto mt-4 text-lg font-medium text-slate-600 dark:text-slate-300 sm:text-xl">
+        {siteConfig.author.role} · {siteConfig.author.company}
+      </p>
+      <p class="animate-slide-up animate-delay-100 text-sm text-slate-500 dark:text-slate-400">
+        {siteConfig.author.team} · {siteConfig.author.location}
+      </p>
+
+      <p class="animate-slide-up animate-delay-200 mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400 sm:text-lg">
+        {siteConfig.description}
+      </p>
+
+      <div class="animate-slide-up animate-delay-300 mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href="/profile" class="btn-primary">Full profile</a>
+        <a href={siteConfig.links.resume} class="btn-secondary" download>
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+          </svg>
+          Resume
+        </a>
+        <a href={siteConfig.social.github} class="btn-secondary" target="_blank" rel="noopener noreferrer">
+          GitHub
+        </a>
+        <a href={siteConfig.social.linkedin} class="btn-secondary" target="_blank" rel="noopener noreferrer">
+          LinkedIn
+        </a>
+        <a href={siteConfig.social.email} class="btn-ghost">Email Me</a>
+      </div>
+
+      <div class="animate-slide-up animate-delay-400 mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
+        <span class="inline-flex items-center gap-2">
+          <span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>
+          Kubernetes · Operators · Go
+        </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span>
+          Oracle Database · OCI
+        </span>
+        <span class="inline-flex items-center gap-2">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+          Open source · Teaching labs
+        </span>
+      </div>
+
+      <p class="mt-8 text-xs text-slate-500">
+        Profile mirror of
+        <a
+          class="underline decoration-slate-400 hover:text-brand-600"
+          href={siteConfig.social.githubPages}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          saurabhahuja71.github.io
+        </a>
+        ·
+        <a class="underline decoration-slate-400 hover:text-brand-600" href="/learning-path">
+          Learning path
+        </a>
+      </p>
+    </div>
+  </div>
+</section>
