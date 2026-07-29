@@ -1,5 +1,15 @@
-# Deploy onenova.in from a self-hosted GitHub Actions runner (GCP VM).
-# Flow: push → checkout → install → build Astro → rsync to /var/www/onenova → reload nginx
+# Deploy onenova.in from the EXISTING GCP self-hosted runner (e.g. 136.67.97.86).
+#
+# Safety rules (do not break other Actions on this runner):
+# - Does not reinstall/reconfigure the Actions runner service
+# - Uses Node/pnpm already on the runner (nvm) when present
+# - Only writes to /var/www/onenova
+# - Only reloads nginx if config test passes
+# - Does not change other repos' workflows or runner labels
+#
+# Optional: add a runner label "onenova" and set runs-on below to
+#   [self-hosted, onenova]
+# if this machine is shared and you want isolation by label.
 name: Deploy OneNova
 
 on:
@@ -15,14 +25,18 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: "20"
   WEB_ROOT: /var/www/onenova
   PUBLIC_SITE_URL: https://onenova.in
   PUBLIC_GITHUB_USERNAME: saurabhahuja71
+  # Corporate proxy on some Oracle/GCP hybrid paths (no-op if unset on pure GCP)
+  # http_proxy / https_proxy can also be set as runner env vars system-wide.
 
 jobs:
   deploy:
     name: Build & deploy (self-hosted)
+    # Shared runner: keep generic self-hosted so existing machine picks it up.
+    # If you add label "onenova" on the runner, prefer:
+    # runs-on: [self-hosted, onenova]
     runs-on: self-hosted
     timeout-minutes: 30
 
@@ -30,75 +44,87 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-        continue-on-error: true
-
-      - name: Ensure Node / pnpm available
+      - name: Use existing Node / pnpm (non-destructive)
         shell: bash
         run: |
           set -euo pipefail
+          # Prefer nvm already used by other workflows on this runner
           export NVM_DIR="${HOME}/.nvm"
           if [[ -s "${NVM_DIR}/nvm.sh" ]]; then
             # shellcheck disable=SC1090
             . "${NVM_DIR}/nvm.sh"
-            nvm install 20 >/dev/null 2>&1 || true
-            nvm use 20 >/dev/null 2>&1 || true
+            # Use installed 20 if present; do NOT force reinstall every run
+            nvm use 20 >/dev/null 2>&1 || nvm use default >/dev/null 2>&1 || true
           fi
-          command -v node
+
+          if ! command -v node >/dev/null 2>&1; then
+            echo "ERROR: node not found on runner. Install once with nvm as the runner user."
+            exit 1
+          fi
           node -v
+
           if ! command -v pnpm >/dev/null 2>&1; then
-            corepack enable || true
-            corepack prepare pnpm@9.15.0 --activate || npm install -g pnpm@9.15.0
+            # User-local only — avoid global npm -g when possible
+            if command -v corepack >/dev/null 2>&1; then
+              corepack enable || true
+              corepack prepare pnpm@9.15.0 --activate || true
+            fi
+          fi
+          if ! command -v pnpm >/dev/null 2>&1; then
+            echo "ERROR: pnpm not found. Install once: corepack prepare pnpm@9.15.0 --activate"
+            exit 1
           fi
           pnpm -v
-          echo "PATH=$PATH" >> "$GITHUB_ENV"
-          # Persist nvm path for subsequent steps when setup-node is unavailable
-          if [[ -n "${NVM_DIR:-}" && -d "${NVM_DIR}/versions/node" ]]; then
-            NODE_BIN="$(dirname "$(command -v node)")"
-            echo "${NODE_BIN}" >> "$GITHUB_PATH"
-            echo "$(dirname "$(command -v pnpm)")" >> "$GITHUB_PATH"
-          fi
+
+          NODE_BIN="$(dirname "$(command -v node)")"
+          PNPM_BIN="$(dirname "$(command -v pnpm)")"
+          echo "${NODE_BIN}" >> "$GITHUB_PATH"
+          echo "${PNPM_BIN}" >> "$GITHUB_PATH"
+          {
+            echo "NVM_DIR=${NVM_DIR}"
+          } >> "$GITHUB_ENV"
 
       - name: Install dependencies
         shell: bash
         run: |
-          export NVM_DIR="${HOME}/.nvm"
-          [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
+          set -euo pipefail
+          [[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]] && . "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
+          nvm use 20 >/dev/null 2>&1 || nvm use default >/dev/null 2>&1 || true
           pnpm install --frozen-lockfile || pnpm install
 
       - name: Build Astro site
         shell: bash
         env:
-          # Optional: higher GitHub API rate limits + contribution graph
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PERSONAL_GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
           PUBLIC_GITHUB_USERNAME: ${{ env.PUBLIC_GITHUB_USERNAME }}
           PUBLIC_FORMSPREE_ID: ${{ secrets.PUBLIC_FORMSPREE_ID }}
           PUBLIC_SITE_URL: ${{ env.PUBLIC_SITE_URL }}
         run: |
-          export NVM_DIR="${HOME}/.nvm"
-          [[ -s "${NVM_DIR}/nvm.sh" ]] && . "${NVM_DIR}/nvm.sh"
+          set -euo pipefail
+          [[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]] && . "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
+          nvm use 20 >/dev/null 2>&1 || nvm use default >/dev/null 2>&1 || true
           pnpm run build:fast
 
-      - name: Deploy to /var/www/onenova
+      - name: Deploy static files to /var/www/onenova only
         shell: bash
         run: |
           set -euo pipefail
           chmod +x deploy/scripts/deploy.sh
+          # Only this directory is written — never actions-runner or other sites
           WEB_ROOT="${WEB_ROOT}" DIST_DIR=dist ./deploy/scripts/deploy.sh
 
-      - name: Health check (local)
+      - name: Verify deploy (local)
         shell: bash
         run: |
           set -euo pipefail
           test -f "${WEB_ROOT}/index.html"
-          # Prefer localhost HTTP; SSL may use SNI for public host
-          if curl -fsS -o /dev/null -w "%{http_code}" http://127.0.0.1/ | grep -qE '200|301|302'; then
-            echo "Local HTTP OK"
-          else
-            echo "WARN: local HTTP check inconclusive (nginx may only listen on public interfaces)"
+          echo "Deployed files:"
+          ls -la "${WEB_ROOT}" | head -20
+          # Soft health checks — do not fail the job if nginx not ready yet
+          if command -v curl >/dev/null 2>&1; then
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1/ || true)"
+            echo "localhost HTTP status: ${code}"
+            code_ip="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 -H 'Host: onenova.in' http://127.0.0.1/ || true)"
+            echo "Host: onenova.in status: ${code_ip}"
           fi
-          ls -la "${WEB_ROOT}" | head -15
