@@ -27,8 +27,13 @@ import { siteConfig } from '@data/site';
           Prefer a single document? Download the PDF resume or view the dedicated resume page.
         </p>
         <div class="flex flex-wrap gap-3">
-          <a href={siteConfig.links.resume} class="btn-primary" download>Download PDF</a>
-          <a href="/resume" class="btn-secondary">Resume page</a>
+          <a href={siteConfig.links.resumePdf} class="btn-primary" download="Saurabh-Ahuja-Latest.pdf">
+            Download PDF
+          </a>
+          <a href={siteConfig.links.resumeDocx} class="btn-secondary" download="Saurabh-Ahuja-Latest.docx">
+            Download Word
+          </a>
+          <a href="/resume" class="btn-ghost">Resume page</a>
         </div>
       </div>
     </div>

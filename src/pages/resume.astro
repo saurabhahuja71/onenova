@@ -21,37 +21,96 @@ import { siteConfig } from '@data/site';
           subtitle={`${siteConfig.author.role} · ${siteConfig.author.company}`}
         />
         <div class="flex flex-wrap gap-3">
-          <a href={siteConfig.links.resume} class="btn-primary" download>
+          <a
+            href={siteConfig.links.resumePdf}
+            class="btn-primary"
+            download="Saurabh-Ahuja-Latest.pdf"
+          >
             Download PDF
           </a>
-          <a href={siteConfig.social.email} class="btn-secondary">Email Me</a>
+          <a
+            href={siteConfig.links.resumeDocx}
+            class="btn-secondary"
+            download="Saurabh-Ahuja-Latest.docx"
+          >
+            Download Word
+          </a>
+          <a href={siteConfig.social.email} class="btn-ghost">Email Me</a>
           <button type="button" class="btn-ghost" onclick="window.print()">Print</button>
         </div>
       </div>
 
+      <!-- Download cards -->
+      <div class="mt-10 grid gap-4 sm:grid-cols-2">
+        <a
+          href={siteConfig.links.resumePdf}
+          download="Saurabh-Ahuja-Latest.pdf"
+          class="card card-hover flex items-start gap-4"
+        >
+          <span
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-500/15 text-sm font-bold text-red-600 dark:text-red-400"
+            aria-hidden="true"
+          >
+            PDF
+          </span>
+          <div>
+            <p class="font-semibold text-slate-900 dark:text-white">Saurabh-Ahuja-Latest.pdf</p>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              Portable document — best for applications and ATS.
+            </p>
+          </div>
+        </a>
+        <a
+          href={siteConfig.links.resumeDocx}
+          download="Saurabh-Ahuja-Latest.docx"
+          class="card card-hover flex items-start gap-4"
+        >
+          <span
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-sm font-bold text-blue-600 dark:text-blue-400"
+            aria-hidden="true"
+          >
+            DOC
+          </span>
+          <div>
+            <p class="font-semibold text-slate-900 dark:text-white">Saurabh-Ahuja-Latest.docx</p>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              Microsoft Word — editable copy when needed.
+            </p>
+          </div>
+        </a>
+      </div>
+
       <!-- PDF embed / download card -->
-      <div class="mt-10 card overflow-hidden p-0">
+      <div class="mt-6 card overflow-hidden p-0">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/50">
           <p class="text-sm font-medium">PDF preview</p>
-          <a href={siteConfig.links.resume} class="text-sm text-brand-600 hover:underline dark:text-brand-400" download>
-            Saurabh_Ahuja_Resume.pdf
+          <a
+            href={siteConfig.links.resumePdf}
+            class="text-sm text-brand-600 hover:underline dark:text-brand-400"
+            download="Saurabh-Ahuja-Latest.pdf"
+          >
+            Saurabh-Ahuja-Latest.pdf
           </a>
         </div>
         <div class="bg-slate-100 dark:bg-slate-900">
           <object
-            data={siteConfig.links.resume}
+            data={siteConfig.links.resumePdf}
             type="application/pdf"
             class="h-[70vh] w-full min-h-[480px]"
-            aria-label="Resume PDF"
+            aria-label="Resume PDF — Saurabh Ahuja"
           >
             <div class="flex flex-col items-center justify-center gap-4 p-12 text-center">
               <p class="text-slate-600 dark:text-slate-400">
                 PDF preview is unavailable in this browser.
               </p>
-              <a href={siteConfig.links.resume} class="btn-primary" download>Download resume PDF</a>
-              <p class="max-w-md text-xs text-slate-500">
-                Place your file at <code>public/resume/Saurabh_Ahuja_Resume.pdf</code>. A placeholder PDF ships with the repo until you replace it.
-              </p>
+              <div class="flex flex-wrap justify-center gap-3">
+                <a href={siteConfig.links.resumePdf} class="btn-primary" download="Saurabh-Ahuja-Latest.pdf">
+                  Download PDF
+                </a>
+                <a href={siteConfig.links.resumeDocx} class="btn-secondary" download="Saurabh-Ahuja-Latest.docx">
+                  Download Word
+                </a>
+              </div>
             </div>
           </object>
         </div>

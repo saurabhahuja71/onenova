@@ -27,7 +27,11 @@ export const siteConfig = {
     twitter: '',
   },
   links: {
-    resume: '/resume/Saurabh_Ahuja_Resume.pdf',
+    resume: '/resume/Saurabh-Ahuja-Latest.pdf',
+    resumePdf: '/resume/Saurabh-Ahuja-Latest.pdf',
+    resumeDocx: '/resume/Saurabh-Ahuja-Latest.docx',
+    /** @deprecated alias kept for older bookmarks */
+    resumeLegacy: '/resume/Saurabh_Ahuja_Resume.pdf',
     resumePage: '/resume',
     profile: '/profile',
     learningPath: '/learning-path',
