@@ -1,20 +1,20 @@
 export const siteConfig = {
   name: 'Saurabh Ahuja',
-  title: 'Saurabh Ahuja — Principal Engineer · Cloud & Infrastructure',
+  title: 'Saurabh Ahuja — Principal Platform Engineer',
   shortName: 'OneNova',
   description:
-    'Principal Engineer with 15+ years building reliable cloud and infrastructure systems — Kubernetes, operators, Oracle Database, Go, and open source.',
+    'Principal Platform Engineer with 16+ years building cloud-native platforms, Kubernetes operators, identity-aware infrastructure, and secure deployment pipelines.',
   url: 'https://onenova.in',
   locale: 'en_IN',
   author: {
     name: 'Saurabh Ahuja',
     email: 'saurabh@onenova.in',
-    role: 'Principal Member of Technical Staff',
-    company: 'Oracle',
-    team: 'RACPACK MAA Solution Engineering',
+    role: 'Principal Data Systems Engineer',
+    company: 'Oracle India',
+    team: 'Data systems · Kubernetes operators · Database platforms',
     location: 'Bangalore, India',
-    bio: 'Principal Engineer | Kubernetes Control Plane Architect | Distributed Systems | Golang | Operators | Oracle Database | Cloud-Native Platforms',
-    yearsExperience: '15+',
+    bio: 'Principal Platform Engineer | Kubernetes operators | Go | OCI | Oracle Database | Identity-aware infrastructure | CI/CD',
+    yearsExperience: '16+',
   },
   social: {
     github: 'https://github.com/saurabhahuja71',
