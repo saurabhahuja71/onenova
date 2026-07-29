@@ -179,20 +179,49 @@ Safe one-time bootstrap notes: `deploy/RUNNER.md`, `deploy/scripts/setup-vm-safe
 
 ---
 
-## DNS and HTTPS (when ready)
+## DNS and HTTPS (Cloudflare Full Strict — recommended)
 
-Point **A** records only (do **not** change Purelymail email MX/TXT):
+**Do not use Cloudflare Flexible SSL** (edge HTTPS only; origin stays HTTP; risk of loops / weaker security).
 
-| Type | Name | Value |
-|------|------|--------|
-| A | `@` | `136.67.97.86` |
-| A | `www` | `136.67.97.86` |
+### Architecture
 
-Then on the VM:
+```text
+Visitor ──HTTPS──► Cloudflare ──HTTPS──► GCP VM (nginx + Let's Encrypt) ──► /var/www/onenova
+```
+
+### Done on the VM (origin)
+
+- Certbot packages installed  
+- Certificate: `/etc/letsencrypt/live/onenova.in/` (onenova.in + www)  
+- nginx listens **80** + **443** with valid LE cert  
+- HTTP domains redirect to HTTPS; ACME webroot kept for renewal  
+- `certbot renew --dry-run` succeeded  
+- GCP tags: `http-server`, `https-server` (ports 80/443)
+
+### You must set in Cloudflare dashboard
+
+1. **SSL/TLS → Overview** → **Full (Strict)**  
+2. **SSL/TLS → Edge Certificates**:
+   - **Always Use HTTPS** = On  
+   - **Automatic HTTPS Rewrites** = On  
+3. DNS A records for `@` and `www` → `136.67.97.86` (proxied orange cloud is fine once origin has LE cert)
+
+Do **not** change Purelymail MX/TXT for email.
+
+### Verify
 
 ```bash
-sudo certbot --nginx -d onenova.in -d www.onenova.in \
-  -m saurabh@onenova.in --agree-tos --redirect
+curl -I https://onenova.in
+curl -I https://www.onenova.in
+# expect 200 and your portfolio title
+```
+
+### Renewals
+
+Certbot timer is installed. Manual check:
+
+```bash
+sudo certbot renew --dry-run
 ```
 
 ---
