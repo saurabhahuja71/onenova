@@ -3,141 +3,76 @@ import { siteConfig } from '@data/site';
 
 const formspreeId = import.meta.env.PUBLIC_FORMSPREE_ID || '';
 const email = siteConfig.author.email;
+const useFormspree = Boolean(formspreeId);
 ---
 
-{
-  formspreeId ? (
-    <form class="card space-y-5" action={`https://formspree.io/f/${formspreeId}`} method="POST">
-      <input type="hidden" name="_subject" value="Contact from onenova.in" />
-      <input type="text" name="_gotcha" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+<form
+  class="card space-y-5"
+  id="contact-form"
+  method={useFormspree ? 'POST' : 'get'}
+  action={useFormspree ? `https://formspree.io/f/${formspreeId}` : '#'}
+>
+  {
+    useFormspree && (
+      <>
+        <input type="hidden" name="_subject" value="Contact from onenova.in" />
+        <input type="text" name="_gotcha" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      </>
+    )
+  }
 
-      <div class="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label for="name" class="mb-1.5 block text-sm font-medium">
-            Name
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            autocomplete="name"
-            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
-          />
-        </div>
-        <div>
-          <label for="email" class="mb-1.5 block text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autocomplete="email"
-            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
-          />
-        </div>
-      </div>
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="contact-name" class="mb-1.5 block text-sm font-medium">Name</label>
+      <input
+        id="contact-name"
+        name="name"
+        type="text"
+        required
+        autocomplete="name"
+        class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
+      />
+    </div>
+    <div>
+      <label for="contact-email" class="mb-1.5 block text-sm font-medium">Email</label>
+      <input
+        id="contact-email"
+        name="email"
+        type="email"
+        required
+        autocomplete="email"
+        class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
+      />
+    </div>
+  </div>
 
-      <div>
-        <label for="message" class="mb-1.5 block text-sm font-medium">
-          Message
-        </label>
-        <textarea
-          id="message"
-          name="message"
-          required
-          rows="6"
-          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
-          placeholder="What are you building?"
-        />
-      </div>
+  <div>
+    <label for="contact-message" class="mb-1.5 block text-sm font-medium">Message</label>
+    <textarea
+      id="contact-message"
+      name="message"
+      required
+      rows="6"
+      class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
+      placeholder="What are you building?"
+    ></textarea>
+  </div>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <button type="submit" class="btn-primary">
-          Send message
-        </button>
-        <a href={`mailto:${email}`} class="btn-ghost text-sm">
-          Or email directly
-        </a>
-      </div>
+  <div class="flex flex-wrap items-center gap-3">
+    <button type="submit" class="btn-primary">Send message</button>
+    <a href={`mailto:${email}`} class="btn-ghost text-sm">Email {email}</a>
+  </div>
 
-      <p class="text-xs text-slate-500">
-        Messages are not stored on this server. Delivered via Formspree.
-      </p>
-    </form>
-  ) : (
-    <form class="card space-y-5" id="mailto-contact-form">
-      <p class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-100">
-        Formspree is not configured. Submitting opens your email client via
-        <code class="text-xs">mailto:</code>. Set
-        <code class="text-xs">PUBLIC_FORMSPREE_ID</code> for hosted delivery without storing messages on this server.
-      </p>
-
-      <div class="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label for="name" class="mb-1.5 block text-sm font-medium">
-            Name
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            autocomplete="name"
-            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
-          />
-        </div>
-        <div>
-          <label for="email" class="mb-1.5 block text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autocomplete="email"
-            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label for="message" class="mb-1.5 block text-sm font-medium">
-          Message
-        </label>
-        <textarea
-          id="message"
-          name="message"
-          required
-          rows="6"
-          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-brand-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-900"
-          placeholder="What are you building?"
-        />
-      </div>
-
-      <div class="flex flex-wrap items-center gap-3">
-        <button type="submit" class="btn-primary">
-          Open email client
-        </button>
-        <a href={`mailto:${email}`} class="btn-ghost text-sm">
-          Or email directly
-        </a>
-      </div>
-
-      <p class="text-xs text-slate-500">
-        Messages are not stored on this server. Uses mailto:.
-      </p>
-    </form>
-  )
-}
+  <p class="text-xs text-slate-500">
+    Prefer email? Write to
+    <a class="text-brand-600 hover:underline dark:text-brand-400" href={`mailto:${email}`}>{email}</a>.
+  </p>
+</form>
 
 {
-  !formspreeId && (
+  !useFormspree && (
     <script define:vars={{ email }}>
-      const form = document.getElementById('mailto-contact-form');
+      const form = document.getElementById('contact-form');
       form?.addEventListener('submit', (e) => {
         e.preventDefault();
         const fd = new FormData(form);
