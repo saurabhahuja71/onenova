@@ -258,6 +258,11 @@ sudo chmod 440 /etc/sudoers.d/onenova-deploy
 
 ---
 
+## Deployment (runner optional)
+
+**You do not need a GitHub runner for this repo just to publish.**  
+Manual build on the VM is enough. Full detail: **[deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md)**.
+
 ## How GitHub Actions deploy works
 
 ```text
