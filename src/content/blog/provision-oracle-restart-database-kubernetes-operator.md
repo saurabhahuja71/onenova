@@ -1,7 +1,8 @@
 ---
 title: "Provision an Oracle Restart Database on Kubernetes with Oracle Database Operator"
-description: "Step-by-step guide for new users: deploy Oracle Restart (Grid Infrastructure + single-instance Oracle Database) on Kubernetes using the Oracle Database Operator OracleRestart CR, ASM disks, secrets, and SQL*Plus connectivity."
+description: "Step-by-step guide for new users: verify operator, CRDs, secrets, and nodes with kubectl, then provision Oracle Restart (GI + single-instance DB) on Kubernetes with the Oracle Database Operator."
 pubDate: 2026-07-30
+updatedDate: 2026-07-30
 author: "Saurabh Ahuja"
 tags:
   - oracle
@@ -21,6 +22,7 @@ This guide is written for **new users**: platform engineers and DBAs who know ba
 
 **What you will achieve**
 
+- Run **kubectl pre-checks** so operator, CRDs, secrets, and capacity exist **before** you apply Oracle Restart  
 - Understand what the Oracle Restart Controller creates on the cluster  
 - Build or tag a slim Oracle Restart container image  
 - Apply a sample `OracleRestart` CR (`oraclerestart_prov.yaml`)  
@@ -47,7 +49,239 @@ This guide is written for **new users**: platform engineers and DBAs who know ba
 6. Kubernetes **Secrets** for SSH keys and database credentials as required by your operator install docs.  
 7. Container image access: either a registry-hosted slim image or a locally built RAC/ORestart slim image.
 
-If the operator is not installed yet, start from the project root documentation in [oracle/oracle-database-operator](https://github.com/oracle/oracle-database-operator) before applying the Restart CR.
+If the operator is not installed yet, start from the project root documentation in [oracle/oracle-database-operator](https://github.com/oracle/oracle-database-operator) before applying the Restart CR. **Do not apply `oraclerestart_prov.yaml` until every pre-check below passes.**
+
+---
+
+## Pre-flight checks: verify prerequisites with kubectl
+
+Run these **before** `kubectl apply -f oraclerestart_prov.yaml`. Adjust namespace names if your install differs from the samples (`orestart` for the database CR; the operator often runs in its own namespace such as `oracle-database-operator-system`—confirm on your cluster).
+
+Set a namespace variable for the sample:
+
+```bash
+export NS=orestart
+```
+
+### 1. Cluster access and API server health
+
+```bash
+kubectl cluster-info
+kubectl get nodes -o wide
+kubectl get --raw='/readyz?verbose' 2>/dev/null || kubectl get --raw=/readyz
+```
+
+**Expect:** at least one **Ready** worker node with free capacity (sample wants **4 CPU / 16Gi** allocatable for the Oracle Restart pod alone).
+
+```bash
+kubectl describe nodes | grep -A 8 -E '^Name:|Allocatable:|Allocated resources:'
+# Or a compact view of capacity vs allocatable:
+kubectl get nodes -o custom-columns=\
+NAME:.metadata.name,\
+CPU:.status.allocatable.cpu,\
+MEM:.status.allocatable.memory,\
+READY:.status.conditions[?\(@.type==\"Ready\"\)].status
+```
+
+### 2. Oracle Database Operator is installed and running
+
+List deployments/pods that belong to the operator (name varies by install method—Helm chart, OLM, or raw manifests):
+
+```bash
+# Common patterns — run what matches your install
+kubectl get ns | grep -iE 'oracle|database|operator'
+kubectl get deploy -A | grep -iE 'oracle|database.operator|db-operator'
+kubectl get pods -A | grep -iE 'oracle-database-operator|database-operator'
+```
+
+If you know the operator namespace (example name shown; replace if yours differs):
+
+```bash
+export OP_NS=oracle-database-operator-system   # change if needed
+kubectl get deploy,pods,svc -n "$OP_NS"
+kubectl get pods -n "$OP_NS" -o wide
+```
+
+**Expect:** operator pod(s) in **Running** / **Ready** state, not `CrashLoopBackOff` or `ImagePullBackOff`.
+
+Controller logs (optional, if a pod is unhealthy):
+
+```bash
+kubectl logs -n "$OP_NS" -l control-plane=controller-manager --tail=50
+# Fallback if labels differ:
+kubectl get pods -n "$OP_NS" -o name | head -1 | xargs -I{} kubectl logs -n "$OP_NS" {} --tail=50
+```
+
+### 3. OracleRestart CRD and API group are registered
+
+The sample CR uses `apiVersion: database.oracle.com/v4` and `kind: OracleRestart`. Confirm the API server knows that type:
+
+```bash
+kubectl api-resources | grep -iE 'oraclerestart|database.oracle.com'
+kubectl get crd | grep -iE 'oraclerestart|database.oracle.com'
+```
+
+More detail on the CRD:
+
+```bash
+kubectl get crd oraclerestarts.database.oracle.com -o yaml | head -40
+# If the exact CRD name differs on your version:
+kubectl get crd -o name | grep -i restart
+```
+
+Short names / versions:
+
+```bash
+kubectl explain oraclerestart --api-version=database.oracle.com/v4
+# or without pinning version:
+kubectl explain OracleRestart
+```
+
+**Expect:** `oraclerestarts` (or similar) listed under group `database.oracle.com`, and `kubectl explain` prints a schema—not `the server doesn't have a resource type`.
+
+List existing Restart instances (should be empty on a fresh lab, or show prior installs):
+
+```bash
+kubectl get oraclerestart -A
+# Some clusters only accept the plural form:
+kubectl get oraclerestarts.database.oracle.com -A
+```
+
+### 4. Target namespace exists (or create it)
+
+```bash
+kubectl get ns "$NS"
+# If missing:
+kubectl create namespace "$NS"
+kubectl get ns "$NS"
+```
+
+Optional: confirm you can create namespaced objects there:
+
+```bash
+kubectl auth can-i create secrets -n "$NS"
+kubectl auth can-i create oraclerestarts.database.oracle.com -n "$NS"
+kubectl auth can-i get pods -n "$NS"
+```
+
+**Expect:** `yes` for create secrets and create OracleRestart (and get pods) with your user/service account.
+
+### 5. Required Secrets exist and contain the expected keys
+
+The sample CR references:
+
+| CR field | Secret name (sample) | Keys the sample expects |
+|----------|----------------------|-------------------------|
+| `sshKeySecret` | `ssh-key-secret` | keys named like `ssh-privkey`, `ssh-pubkey` (see `privKeySecretName` / `pubKeySecretName`) |
+| `dbSecret` | `db-user-pass-pkutl` | `key.pem`, `pwdfile.enc` (see `keyFileName` / `pwdFileName`) |
+
+List secrets in the namespace:
+
+```bash
+kubectl get secrets -n "$NS"
+kubectl get secret -n "$NS" ssh-key-secret -o yaml
+kubectl get secret -n "$NS" db-user-pass-pkutl -o yaml
+```
+
+Show **key names only** (not values)—confirm the keys match the CR:
+
+```bash
+kubectl get secret -n "$NS" ssh-key-secret -o jsonpath='{.data}' | tr ',' '\n'
+# Or list keys cleanly:
+kubectl get secret -n "$NS" ssh-key-secret -o go-template='{{range $k,$v := .data}}{{printf "%s\n" $k}}{{end}}'
+kubectl get secret -n "$NS" db-user-pass-pkutl -o go-template='{{range $k,$v := .data}}{{printf "%s\n" $k}}{{end}}'
+```
+
+**Expect:** both secrets present in `$NS`, with key names matching your YAML (`ssh-privkey`, `ssh-pubkey`, `key.pem`, `pwdfile.enc` in the sample).
+
+If a secret is missing, create it per the operator’s secret docs **before** applying the CR—do not put plaintext passwords in the blog post or in git.
+
+### 6. Worker node identity matches `instDetails.workerNode`
+
+The sample sets `workerNode` to a node **IP**. Resolve what the cluster actually reports:
+
+```bash
+kubectl get nodes -o wide
+kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.addresses}{"\n"}{end}'
+```
+
+Compare the IP you will put in `instDetails.workerNode` with **InternalIP** (or the address family your operator docs require). Wrong node IP → pod never lands on the machine that has ASM disks and software paths.
+
+```bash
+# Example: describe a specific node once you know its name
+kubectl describe node <worker-node-name> | grep -E 'Name:|Taints:|Unschedulable:|Allocatable:|InternalIP|Hostname'
+```
+
+**Expect:** target node **Ready**, no blocking taints (or you tolerate them), and allocatable CPU/memory ≥ sample requests.
+
+### 7. Storage / CSI context (optional but useful)
+
+ASM disks in this use case are usually **node-local devices** referenced by path; the controller still creates related volume objects. Check what storage classes and PVs already exist so you do not collide:
+
+```bash
+kubectl get sc
+kubectl get pv,pvc -A | head -50
+```
+
+### 8. Image pull secrets (if the image is private)
+
+```bash
+kubectl get secrets -n "$NS" | grep -iE 'docker|registry|pull'
+# If your ServiceAccount needs imagePullSecrets:
+kubectl get sa default -n "$NS" -o yaml
+```
+
+### 9. One-shot pre-flight script (copy/paste)
+
+Run this after setting `NS` (and `OP_NS` if known). It fails fast if a check is missing:
+
+```bash
+export NS=orestart
+# export OP_NS=oracle-database-operator-system
+
+set -e
+echo "== nodes =="
+kubectl get nodes -o wide
+
+echo "== OracleRestart API / CRD =="
+kubectl api-resources | grep -i oraclerestart || { echo "FAIL: OracleRestart API missing — install operator/CRDs first"; exit 1; }
+kubectl get crd | grep -i oraclerestart || { echo "FAIL: oraclerestart CRD missing"; exit 1; }
+kubectl explain OracleRestart >/dev/null
+
+echo "== namespace =="
+kubectl get ns "$NS" || { echo "FAIL: namespace $NS missing — kubectl create namespace $NS"; exit 1; }
+
+echo "== secrets (sample names) =="
+kubectl get secret -n "$NS" ssh-key-secret
+kubectl get secret -n "$NS" db-user-pass-pkutl
+echo "SSH secret keys:"; kubectl get secret -n "$NS" ssh-key-secret -o go-template='{{range $k,$v := .data}}{{printf "  %s\n" $k}}{{end}}'
+echo "DB secret keys:"; kubectl get secret -n "$NS" db-user-pass-pkutl -o go-template='{{range $k,$v := .data}}{{printf "  %s\n" $k}}{{end}}'
+
+echo "== existing OracleRestart CRs =="
+kubectl get oraclerestart -A 2>/dev/null || kubectl get oraclerestarts.database.oracle.com -A 2>/dev/null || true
+
+echo "== operator pods (best effort) =="
+kubectl get pods -A | grep -iE 'oracle-database-operator|database-operator' || echo "WARN: no operator pods matched by name — verify OP_NS manually"
+
+echo "PRE-FLIGHT: core API + sample secrets OK. Confirm worker IP, ASM disks, and staged software on the node next."
+```
+
+### 10. Host-side checks (not kubectl—but required)
+
+On the **worker node** you listed in `workerNode` (SSH as root or a privileged user):
+
+```bash
+# ASM devices (paths must match asmDiskGroupDetails)
+ls -l /dev/disk/by-partlabel/asm-disk1 /dev/disk/by-partlabel/asm-disk2
+
+# Software stage + home paths (must match configParams / instDetails)
+ls -la /scratch/software/stage/
+ls -la /scratch/orestart/ 2>/dev/null || mkdir -p /scratch/orestart/
+# Expect grid_home.zip and db_home.zip names to match the CR
+ls -la /scratch/software/stage/grid_home.zip /scratch/software/stage/db_home.zip
+```
+
+Only after **kubectl pre-flight** and **host-side** checks pass should you apply the provisioning YAML.
 
 ---
 
@@ -195,6 +429,8 @@ The sample CR comments optional env vars such as `IGNORE_CRS_PREREQS` and `IGNOR
 
 ## Step-by-step: deploy Oracle Restart
 
+**Stop if pre-flight failed.** Re-run the [Pre-flight checks](#pre-flight-checks-verify-prerequisites-with-kubectl) until operator CRDs, secrets, and node capacity are green.
+
 ### 1. Prepare the worker node
 
 On the chosen worker:
@@ -204,21 +440,26 @@ On the chosen worker:
 - Place `grid_home.zip` and `db_home.zip` under `hostSwStageLocation`.  
 - Ensure the node can pull (or already has) the container image.
 
-### 2. Create namespace and secrets
+### 2. Create namespace and secrets (if not already done)
 
 ```bash
-kubectl create namespace orestart
+kubectl get ns orestart || kubectl create namespace orestart
 # Create SSH and DB credential secrets per operator documentation
 # kubectl apply -f your-secrets.yaml
+kubectl get secrets -n orestart
+kubectl get secret -n orestart ssh-key-secret -o go-template='{{range $k,$v := .data}}{{printf "%s\n" $k}}{{end}}'
+kubectl get secret -n orestart db-user-pass-pkutl -o go-template='{{range $k,$v := .data}}{{printf "%s\n" $k}}{{end}}'
 ```
 
-Secret shape must match `sshKeySecret` and `dbSecret` field names in the CR.
+Secret shape must match `sshKeySecret` and `dbSecret` field names in the CR. Do not apply the Restart CR until both secrets exist with the correct key names.
 
 ### 3. Apply the OracleRestart resource
 
 Use the official sample or your customized copy:
 
 ```bash
+# Final sanity: CRD still present
+kubectl api-resources | grep -i oraclerestart
 kubectl apply -f oraclerestart_prov.yaml
 ```
 
