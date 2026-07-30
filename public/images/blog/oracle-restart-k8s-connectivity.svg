@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-labelledby="title2 desc2">
+  <title id="title2">Client connectivity to Oracle Restart on Kubernetes</title>
+  <desc id="desc2">Shows SQL clients connecting via NodePort, LoadBalancer, or ClusterIP service to the Oracle Restart pod on port 1521.</desc>
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+    <filter id="soft2" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="420" rx="16" fill="url(#bg2)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">How clients reach the database</text>
+  <text x="32" y="62" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Service type decides who can open SQL*Net to port 1521</text>
+
+  <!-- Clients -->
+  <g filter="url(#soft2)">
+    <rect x="40" y="100" width="150" height="70" rx="10" fill="url(#card2)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="115" y="130" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600">SQL*Plus / app</text>
+  <text x="115" y="150" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">outside cluster</text>
+
+  <g filter="url(#soft2)">
+    <rect x="40" y="220" width="150" height="70" rx="10" fill="url(#card2)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="115" y="250" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600">In-cluster app</text>
+  <text x="115" y="270" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">same K8s / OKE</text>
+
+  <!-- Paths -->
+  <g filter="url(#soft2)">
+    <rect x="240" y="88" width="200" height="56" rx="10" fill="url(#card2)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="340" y="112" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">NodePort</text>
+  <text x="340" y="130" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">workerIP:nodePort → 1521</text>
+
+  <g filter="url(#soft2)">
+    <rect x="240" y="156" width="200" height="56" rx="10" fill="url(#card2)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="340" y="180" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">LoadBalancer</text>
+  <text x="340" y="198" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">EXTERNAL-IP:1521 (OKE LB)</text>
+
+  <g filter="url(#soft2)">
+    <rect x="240" y="236" width="200" height="56" rx="10" fill="url(#card2)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="340" y="260" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">ClusterIP only</text>
+  <text x="340" y="278" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">no public access</text>
+
+  <!-- Service object -->
+  <g filter="url(#soft2)">
+    <rect x="500" y="150" width="180" height="90" rx="10" fill="url(#card2)" stroke="#22d3ee" stroke-width="1.5"/>
+  </g>
+  <text x="590" y="180" text-anchor="middle" fill="#67e8f9" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">SERVICE</text>
+  <text x="590" y="202" text-anchor="middle" fill="#f8fafc" font-family="ui-monospace, monospace" font-size="13" font-weight="700">svc/dbmc1</text>
+  <text x="590" y="222" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">selector → dbmc1-0</text>
+
+  <!-- Pod -->
+  <g filter="url(#soft2)">
+    <rect x="740" y="150" width="180" height="90" rx="10" fill="url(#card2)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="830" y="180" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">POD</text>
+  <text x="830" y="202" text-anchor="middle" fill="#f8fafc" font-family="ui-monospace, monospace" font-size="13" font-weight="700">dbmc1-0</text>
+  <text x="830" y="222" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">listener :1521 · CDB name</text>
+
+  <!-- Headless note -->
+  <g filter="url(#soft2)">
+    <rect x="500" y="280" width="420" height="52" rx="10" fill="url(#card2)" stroke="#475569" stroke-width="1"/>
+  </g>
+  <text x="710" y="302" text-anchor="middle" fill="#cbd5e1" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600">Headless svc/dbmc1-0</text>
+  <text x="710" y="320" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">stable DNS for Oracle Restart node hostname inside the cluster</text>
+
+  <!-- Lines -->
+  <line x1="190" y1="125" x2="238" y2="116" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="190" y1="140" x2="238" y2="184" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="190" y1="255" x2="238" y2="264" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <line x1="440" y1="116" x2="498" y2="180" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="440" y1="184" x2="498" y2="190" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="440" y1="264" x2="498" y2="210" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <line x1="680" y1="195" x2="738" y2="195" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr2)"/>
+
+  <text x="32" y="380" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Example: sqlplus system/…@//&lt;host&gt;:&lt;port&gt;/PORCLCDB  ·  open firewall for NodePort on the worker when used</text>
+</svg>

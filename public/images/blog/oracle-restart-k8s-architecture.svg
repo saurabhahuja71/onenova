@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
+  <title id="title">Oracle Restart on Kubernetes / OKE architecture</title>
+  <desc id="desc">Shows Oracle Database Operator reconciling an OracleRestart custom resource into a pod, services, secrets, and node-local ASM disks and host paths on a worker node.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="640" rx="16" fill="url(#bg)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">Oracle Restart on Kubernetes / OKE</text>
+  <text x="32" y="62" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Pods, Services, Secrets, CRDs — not product-internal GI diagrams</text>
+
+  <!-- Outer cluster -->
+  <rect x="24" y="84" width="912" height="532" rx="14" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="40" y="108" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.06em">KUBERNETES CLUSTER (OKE OR ANY CNCF CLUSTER)</text>
+
+  <!-- You / kubectl -->
+  <g filter="url(#soft)">
+    <rect x="40" y="128" width="150" height="72" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="115" y="158" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600">You / CI</text>
+  <text x="115" y="178" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">kubectl apply CR</text>
+
+  <!-- Arrow to CR -->
+  <line x1="190" y1="164" x2="248" y2="164" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- OracleRestart CR -->
+  <g filter="url(#soft)">
+    <rect x="250" y="120" width="200" height="88" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="350" y="148" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">CUSTOM RESOURCE</text>
+  <text x="350" y="170" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">OracleRestart</text>
+  <text x="350" y="190" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="10">database.oracle.com/v4</text>
+
+  <!-- Operator box -->
+  <g filter="url(#soft)">
+    <rect x="500" y="120" width="220" height="88" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="610" y="148" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">OPERATOR NS</text>
+  <text x="610" y="170" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">Oracle Database Operator</text>
+  <text x="610" y="190" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">Restart controller reconcile</text>
+
+  <!-- Arrow CR <-> Operator -->
+  <line x1="450" y1="164" x2="498" y2="164" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="500" y1="180" x2="450" y2="180" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowMuted)"/>
+  <text x="475" y="152" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9">watch</text>
+  <text x="475" y="198" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9">status</text>
+
+  <!-- Down arrow from operator to namespace -->
+  <line x1="610" y1="208" x2="610" y2="248" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="630" y="236" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">creates / manages</text>
+
+  <!-- Namespace orestart -->
+  <rect x="40" y="252" width="880" height="340" rx="12" fill="#0b1220" stroke="#475569" stroke-width="1.5"/>
+  <text x="56" y="276" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.05em">NAMESPACE: orestart (sample)</text>
+
+  <!-- Secrets -->
+  <g filter="url(#soft)">
+    <rect x="56" y="296" width="160" height="100" rx="10" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="136" y="322" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">SECRETS</text>
+  <text x="136" y="344" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ssh-key-secret</text>
+  <text x="136" y="362" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">db-user-pass-pkutl</text>
+  <text x="136" y="382" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">referenced by CR</text>
+
+  <!-- StatefulSet / Pod -->
+  <g filter="url(#soft)">
+    <rect x="260" y="296" width="240" height="120" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="380" y="322" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">STATEFULSET / POD</text>
+  <text x="380" y="344" text-anchor="middle" fill="#f8fafc" font-family="ui-monospace, monospace" font-size="13" font-weight="700">pod/dbmc1-0</text>
+  <text x="380" y="366" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">slim image: GI + single DB</text>
+  <text x="380" y="386" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">requests: 4 CPU / 16Gi (sample)</text>
+  <text x="380" y="404" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">scheduled to workerNode IP</text>
+
+  <!-- Services -->
+  <g filter="url(#soft)">
+    <rect x="540" y="296" width="200" height="120" rx="10" fill="url(#card)" stroke="#22d3ee" stroke-width="1.5"/>
+  </g>
+  <text x="640" y="322" text-anchor="middle" fill="#67e8f9" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">SERVICES</text>
+  <text x="640" y="346" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">svc/dbmc1</text>
+  <text x="640" y="364" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">NodePort | LoadBalancer</text>
+  <text x="640" y="380" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">port 1521 (SQL*Net)</text>
+  <text x="640" y="400" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">svc/dbmc1-0 headless</text>
+
+  <!-- Image -->
+  <g filter="url(#soft)">
+    <rect x="770" y="296" width="132" height="120" rx="10" fill="url(#card)" stroke="#fb7185" stroke-width="1.5"/>
+  </g>
+  <text x="836" y="330" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">IMAGE</text>
+  <text x="836" y="356" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">slim build</text>
+  <text x="836" y="374" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">from GitHub</text>
+  <text x="836" y="396" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9">not OCR slim</text>
+
+  <!-- Arrows secrets/services to pod -->
+  <line x1="216" y1="346" x2="258" y2="346" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrowMuted)"/>
+  <line x1="500" y1="346" x2="538" y2="346" stroke="#22d3ee" stroke-width="1.5"/>
+  <line x1="520" y1="346" x2="520" y2="346" stroke="#22d3ee"/>
+  <text x="520" y="338" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9">selects</text>
+
+  <!-- Worker node strip -->
+  <rect x="56" y="440" width="848" height="132" rx="10" fill="#111827" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="72" y="464" fill="#cbd5e1" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">WORKER NODE (selected by instDetails.workerNode)</text>
+  <text x="72" y="482" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">Pod is node-affine — disks and host paths must exist on THIS node</text>
+
+  <!-- Node sub boxes -->
+  <rect x="72" y="498" width="200" height="56" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1"/>
+  <text x="172" y="520" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">ASM disks</text>
+  <text x="172" y="540" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="9">by-partlabel/asm-disk*</text>
+
+  <rect x="292" y="498" width="220" height="56" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1"/>
+  <text x="402" y="520" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">hostSwLocation</text>
+  <text x="402" y="540" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="9">/scratch/orestart/ (GI + DB home)</text>
+
+  <rect x="532" y="498" width="200" height="56" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1"/>
+  <text x="632" y="520" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">Container runtime</text>
+  <text x="632" y="540" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9">slim image pulled / loaded</text>
+
+  <rect x="752" y="498" width="136" height="56" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="1"/>
+  <text x="820" y="520" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">PV / mounts</text>
+  <text x="820" y="540" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9">ASM → DATA DG</text>
+
+  <!-- Pod to node arrow -->
+  <line x1="380" y1="416" x2="380" y2="438" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>

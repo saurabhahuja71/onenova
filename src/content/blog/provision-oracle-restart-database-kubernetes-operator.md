@@ -1,6 +1,6 @@
 ---
 title: "Provision an Oracle Restart Database on Kubernetes with Oracle Database Operator"
-description: "Step-by-step guide for new users: verify operator, CRDs, and secrets with kubectl; build the slim Oracle Restart image from GitHub (not OCR); then provision Oracle Restart on Kubernetes."
+description: "Kubernetes/OKE architecture for Oracle Restart: operator, CR, pod, Services, Secrets, node ASM; kubectl pre-flight; build slim image from GitHub; provision and connect."
 pubDate: 2026-07-30
 updatedDate: 2026-07-30
 author: "Saurabh Ahuja"
@@ -22,12 +22,50 @@ This guide is written for **new users**: platform engineers and DBAs who know ba
 
 **What you will achieve**
 
+- See how the **pod, Services, Secrets, and operator** fit on **OKE or any Kubernetes cluster**  
 - Run **kubectl pre-checks** so operator, CRDs, secrets, and capacity exist **before** you apply Oracle Restart  
-- Understand what the Oracle Restart Controller creates on the cluster  
-- Build or tag a slim Oracle Restart container image  
+- Build the slim image from GitHub (not OCR)  
 - Apply a sample `OracleRestart` CR (`oraclerestart_prov.yaml`)  
 - Confirm readiness from pod logs and CR status  
 - Connect with SQL\*Plus (NodePort or LoadBalancer)
+
+---
+
+## Architecture on Kubernetes / OKE (pods and services)
+
+This is **not** a diagram of Oracle Restart product internals (CRS, ASM processes inside the binary stack). It shows how the **Oracle Database Operator** integrates **Kubernetes objects** on **OKE or any CNCF cluster**: Custom Resource → controller → Pod, Services, Secrets, and **node-local** disks/paths.
+
+### Cluster view: what lands where
+
+![Oracle Restart on Kubernetes architecture: operator, OracleRestart CR, namespace with pod, services, secrets, and worker node ASM disks](/images/blog/oracle-restart-k8s-architecture.svg)
+
+| Layer | Kubernetes objects (sample names) | Role |
+|-------|-----------------------------------|------|
+| Control plane (any NS) | Oracle Database Operator deployment | Watches `OracleRestart`, reconciles desired state |
+| API | `OracleRestart` CR (`database.oracle.com/v4`) | Your declarative install/config |
+| Workload NS (`orestart`) | `StatefulSet` / `pod/dbmc1-0` | Runs slim image (GI + single-instance DB) |
+| Workload NS | `svc/dbmc1` (NodePort or LoadBalancer) | Client SQL\*Net on **1521** |
+| Workload NS | `svc/dbmc1-0` headless | Stable in-cluster DNS / node hostname |
+| Workload NS | Secrets `ssh-key-secret`, `db-user-pass-pkutl` | Referenced by CR fields |
+| **Worker node** | ASM devices + `hostSwLocation` | Not free-floating pods—**this node** must hold disks/paths |
+
+**OKE note:** same object model as any Kubernetes. On OKE, a `LoadBalancer` Service typically provisions an **OCI load balancer** automatically; on bare metal you may use MetalLB or stick to NodePort. The operator and CR do not change—only how `EXTERNAL-IP` appears.
+
+### Provision flow (you vs the cluster)
+
+![Provision flow from pre-flight and slim image build through apply, operator reconcile, ready, and connect](/images/blog/oracle-restart-k8s-reconcile-flow.svg)
+
+### Connectivity: who can open port 1521
+
+![Client connectivity via NodePort, LoadBalancer, or ClusterIP to the Oracle Restart pod](/images/blog/oracle-restart-k8s-connectivity.svg)
+
+```text
+Outside client ──► NodePort (workerIP:nodePort) ──┐
+Outside client ──► LoadBalancer (EXTERNAL-IP:1521) ├──► svc/dbmc1 ──► pod/dbmc1-0 :1521
+In-cluster app ──► ClusterIP / DNS (dbmc1.orestart) ─┘
+```
+
+Use `kubectl get all -n orestart -o wide` after provision to see which path your cluster created.
 
 ---
 
@@ -293,7 +331,7 @@ Only after **kubectl pre-flight** and **host-side** checks pass should you apply
 
 ## What “provision with Oracle Restart Controller” actually creates
 
-When you apply the provisioning manifest, the controller does more than start a pod. In this use case it typically provisions:
+The [architecture diagrams above](#architecture-on-kubernetes--oke-pods-and-services) map to the objects below. When you apply the provisioning manifest, the controller does more than start a pod. In this use case it typically provisions:
 
 | Artifact | Purpose |
 |----------|---------|
