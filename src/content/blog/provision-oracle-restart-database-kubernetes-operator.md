@@ -1,6 +1,6 @@
 ---
 title: "Provision an Oracle Restart Database on Kubernetes with Oracle Database Operator"
-description: "Step-by-step guide for new users: verify operator, CRDs, secrets, and nodes with kubectl, then provision Oracle Restart (GI + single-instance DB) on Kubernetes with the Oracle Database Operator."
+description: "Step-by-step guide for new users: verify operator, CRDs, and secrets with kubectl; build the slim Oracle Restart image from GitHub (not OCR); then provision Oracle Restart on Kubernetes."
 pubDate: 2026-07-30
 updatedDate: 2026-07-30
 author: "Saurabh Ahuja"
@@ -47,7 +47,7 @@ This guide is written for **new users**: platform engineers and DBAs who know ba
 4. **ASM-ready block devices** on that worker (for example `/dev/disk/by-partlabel/asm-disk1`).  
 5. Host directories for software stage and Oracle homes (for example `/scratch/software/stage` and `/scratch/orestart/`).  
 6. Kubernetes **Secrets** for SSH keys and database credentials as required by your operator install docs.  
-7. Container image access: either a registry-hosted slim image or a locally built RAC/ORestart slim image.
+7. A **slim Oracle Restart / RAC container image you build yourself** (see [Build the slim container image](#build-the-slim-container-image-not-on-oracle-container-registry-yet)). The slim tag used in samples is **not** published today on Oracle Container Registry’s RAC repository—you cannot pull a ready-made slim image from OCR for this flow yet.
 
 If the operator is not installed yet, start from the project root documentation in [oracle/oracle-database-operator](https://github.com/oracle/oracle-database-operator) before applying the Restart CR. **Do not apply `oraclerestart_prov.yaml` until every pre-check below passes.**
 
@@ -274,10 +274,16 @@ On the **worker node** you listed in `workerNode` (SSH as root or a privileged u
 # ASM devices (paths must match asmDiskGroupDetails)
 ls -l /dev/disk/by-partlabel/asm-disk1 /dev/disk/by-partlabel/asm-disk2
 
-# Software stage + home paths (must match configParams / instDetails)
-ls -la /scratch/software/stage/
+# Oracle home host path (matches instDetails.hostSwLocation in the sample)
 ls -la /scratch/orestart/ 2>/dev/null || mkdir -p /scratch/orestart/
-# Expect grid_home.zip and db_home.zip names to match the CR
+```
+
+**Slim image path (recommended in this guide):** you already built the image from GitHub—you do **not** need `grid_home.zip` / `db_home.zip` on the node for that image build. Confirm the **container image** is available on the node or pullable from your registry instead of hunting for installer zips.
+
+**Host-stage / non-slim path only:** if your operator version and CR still install from staged media, then also verify:
+
+```bash
+ls -la /scratch/software/stage/
 ls -la /scratch/software/stage/grid_home.zip /scratch/software/stage/db_home.zip
 ```
 
@@ -294,40 +300,108 @@ When you apply the provisioning manifest, the controller does more than start a 
 | **Oracle Restart pod** | Runs Grid Infrastructure + database processes inside the container/pod model |
 | **Headless services** | Stable DNS for the Oracle Restart node hostname inside the cluster |
 | **ASM-backed storage** | Persistent volumes derived from the disks you list under `asmDiskGroupDetails` |
-| **Software host paths** | Staged GI/RDBMS zips and installed homes mounted from the worker node |
+| **Software host paths** | Worker directories for Oracle homes (and optional staged zips for non-slim flows) |
 | **Namespace** | Sample flows use namespace `orestart` |
 
-Two host paths matter for first-time setup:
+Two host paths appear in the sample CR:
 
-- **`hostSwStageLocation`** — where Grid Infrastructure and RDBMS binaries (zip files) are staged on the **worker node**.  
+- **`hostSwStageLocation`** — used when the controller expects **staged** Grid / RDBMS zip files on the worker.  
 - **`hostSwLocation`** — where GI HOME and RDBMS HOME live on the worker; the Oracle Restart pod mounts these paths.
 
-Think of it as: **stage software on the node → controller installs/configures via the CR → ASM disks form the DATA diskgroup → database becomes ready**.
+For the **slim image** path documented below, you build software into the image from GitHub—you do **not** need to download and stage `grid_home.zip` / `db_home.zip` just to build that image. Keep the CR fields consistent with the image and operator version you use; do not invent zip files you never staged.
+
+Think of the flow as: **build/push slim image → prepare node disks + secrets → apply CR → controller configures Restart → ASM DATA diskgroup → database ready**.
 
 ---
 
-## Build or choose the container image
+## Build the slim container image (not on Oracle Container Registry yet)
 
-The sample provisioning flow uses a slim Oracle Restart image, for example:
+### Important: slim image is not available on OCR today
+
+New users often look for a pull-ready image under **Oracle Real Application Clusters** on [Oracle Container Registry](https://container-registry.oracle.com/ords/f?p=113:4:6124130782295:::4:P4_REPOSITORY,AI_REPOSITORY,AI_REPOSITORY_NAME,P4_REPOSITORY_NAME,P4_EULA_ID,P4_BUSINESS_AREA_ID:392,392,Oracle%20Real%20Application%20Clusters,Oracle%20Real%20Application%20Clusters,1,0&cs=3csbaN7EXhgOkanl3dndm8GcIDtGUEeeKdRaLE12Ej7owZwM_mB5n5Ii1x_rpOG4SeP7kVvF6yG-mb5L9DLjcLg).
+
+**For this Oracle Restart slim sample, that is not enough today:**
+
+| Expectation | Reality (as of this guide) |
+|-------------|----------------------------|
+| “Pull slim ORestart from container-registry.oracle.com” | **Slim image is not published there** for this use case |
+| “Use sample tag as-is from OCR” | Sample names like `dbocir/oracle/database-orestart:19.3.0-slim` are **placeholders** for an image **you** build or host |
+| “I need `grid_home.zip` / `db_home.zip` to build slim” | **No** — the GitHub **slim** build path does **not** require those zip files |
+
+**What you must do for now:** build the slim container image from Oracle’s public Docker/Podman build scripts on GitHub, tag it for your registry (or `localhost`), load it onto your cluster nodes or private registry, then set `spec.image` in the CR to **your** tag.
+
+### Where to build from (GitHub)
+
+Official slim build docs live in the Oracle Docker images repository:
+
+- [Building Oracle RAC Database container slim image](https://github.com/oracle/docker-images/tree/main/OracleDatabase/RAC/OracleRealApplicationClusters#building-oracle-rac-database-container-slim-image)  
+- Path context: [`OracleDatabase/RAC/OracleRealApplicationClusters`](https://github.com/oracle/docker-images/tree/main/OracleDatabase/RAC/OracleRealApplicationClusters)
+
+The Oracle Database Operator provisioning doc points at that same tree for the slim image used with Oracle Restart Controller samples ([provisioning guide](https://github.com/oracle/oracle-database-operator/blob/main/docs/oraclerestart/provisioning/provisioning_oracle_restart_db.md)).
+
+### Slim build does not need installer zip files
+
+This is the part that confuses people who have done classic Oracle container builds:
+
+| Build style | Need `LINUX.X64_*.zip` / `grid_home.zip` / `db_home.zip` on the build host? |
+|-------------|-----------------------------------------------------------------------------|
+| **Slim image** (GitHub slim target for RAC/ORestart samples) | **No** — follow the slim build section; you do **not** stage those zips for the image build |
+| Older / full software-stage installs | Often **yes** — installer media and host stage paths matter |
+
+So for this blog’s **recommended path for new users**:
+
+1. Clone `oracle/docker-images` (or the documented slim instructions linked above).  
+2. Build the **slim** image per that README (Podman/Docker as documented).  
+3. Do **not** block yourself waiting for zips “because the CR YAML mentions `gridSwZipFile` / `dbSwZipFile`.” Those fields describe **host-stage** style installs; with slim, software is already in the image. Align CR values with the operator doc for slim, or leave stage paths only if your operator version still requires empty/placeholder directories—**do not invent missing zip files**.  
+4. Tag the result for your environment.
+
+Example tags you will create yourself (names are illustrative):
+
+```text
+# After a successful local slim build, a common default looks like:
+localhost/oracle/database-rac:19.3.0-slim
+
+# Retag for your registry or for the sample-style name used in operator docs:
+podman tag localhost/oracle/database-rac:19.3.0-slim \
+  dbocir/oracle/database-orestart:19.3.0-slim
+# or:
+docker tag localhost/oracle/database-rac:19.3.0-slim \
+  <your-registry>/oracle/database-orestart:19.3.0-slim
+```
+
+The operator sample may show:
 
 ```text
 dbocir/oracle/database-orestart:19.3.0-slim
 ```
 
-Oracle documents building related slim RAC/ORestart images from the [Oracle Docker images RAC tree](https://github.com/oracle/docker-images/tree/main/OracleDatabase/RAC/OracleRealApplicationClusters#building-oracle-rac-database-container-slim-image). A default local build is often tagged like:
+Treat that as **“put your built image reference here”**, not as “pull this from OCR.”
 
-```text
-localhost/oracle/database-rac:19.3.0-slim
+### After the image exists
+
+1. **Push** to a registry your worker nodes can pull, **or** load the image onto each target node (`podman load` / `ctr images import` / mirror—whatever your cluster uses).  
+2. Set `spec.image` in `oraclerestart_prov.yaml` to **exactly** that reference.  
+3. Prefer `imagePullPolicy: IfNotPresent` when images are pre-loaded on nodes; use `Always` only when you intentionally pull a new digest from a registry.  
+4. Confirm nodes can resolve the image **before** apply:
+
+```bash
+# On the worker (example with podman/crictl — use what your CRI supports)
+# podman images | grep -iE 'database-rac|database-orestart|orestart'
+# crictl images | grep -iE 'database-rac|database-orestart|orestart'
 ```
 
-**Practical tips for new users**
+A wrong image name is still the most common `ImagePullBackOff`—especially if you left the sample tag as-is without building or mirroring anything.
 
-1. Build once, then **retarget** the image name you put in the CR (`image:` field).  
-2. Push to your private registry if workers cannot pull from your laptop.  
-3. Prefer `imagePullPolicy: IfNotPresent` for large local images; use `Always` when you intentionally roll a new registry digest.  
-4. Update `oraclerestart_prov.yaml` (or your own CR) so `spec.image` matches the image you actually built.
+### Quick FAQ for this section
 
-A wrong image name is the most common “pod stuck in ImagePullBackOff” failure—fix image reference before chasing ASM or SSH secrets.
+**Can I skip building and use only what is on container-registry.oracle.com RAC?**  
+Not for the **slim** sample path described here. OCR’s RAC repository does not replace the GitHub slim build for this guide. Build from GitHub for now.
+
+**Do I need to download Oracle Database zip media to build slim?**  
+**No** for the slim image build itself. Zip staging is a different (non-slim / host-stage) model.
+
+**Where do I put the image name in the CR?**  
+`spec.image` (and optionally registry pull secrets if the image is private).
 
 ---
 
@@ -436,9 +510,9 @@ The sample CR comments optional env vars such as `IGNORE_CRS_PREREQS` and `IGNOR
 On the chosen worker:
 
 - Confirm ASM disks exist and are not mounted as ordinary filesystems.  
-- Create stage and software directories with permissions expected by your operator/docs.  
-- Place `grid_home.zip` and `db_home.zip` under `hostSwStageLocation`.  
-- Ensure the node can pull (or already has) the container image.
+- Ensure the **slim** container image is present or pullable (built from GitHub—not pulled as slim from OCR; see [image section](#build-the-slim-container-image-not-on-oracle-container-registry-yet)).  
+- Create host software directories required by `hostSwLocation` / your operator docs.  
+- **Do not** block on downloading `grid_home.zip` / `db_home.zip` for the slim image build—those zips are not required for the GitHub slim build path.
 
 ### 2. Create namespace and secrets (if not already done)
 
@@ -593,9 +667,13 @@ with the `/tmp/orod/oracle_db_setup.log` stream for install-specific errors.
 
 ## FAQ
 
+### Is the slim Oracle Restart image on Oracle Container Registry?
+
+**Not for this sample path today.** The [Oracle Container Registry RAC repository](https://container-registry.oracle.com/ords/f?p=113:4:6124130782295:::4:P4_REPOSITORY,AI_REPOSITORY,AI_REPOSITORY_NAME,P4_REPOSITORY_NAME,P4_EULA_ID,P4_BUSINESS_AREA_ID:392,392,Oracle%20Real%20Application%20Clusters,Oracle%20Real%20Application%20Clusters,1,0&cs=3csbaN7EXhgOkanl3dndm8GcIDtGUEeeKdRaLE12Ej7owZwM_mB5n5Ii1x_rpOG4SeP7kVvF6yG-mb5L9DLjcLg) does not replace building the **slim** image. Build it from the [GitHub slim instructions](https://github.com/oracle/docker-images/tree/main/OracleDatabase/RAC/OracleRealApplicationClusters#building-oracle-rac-database-container-slim-image). That slim build does **not** require installer zip files.
+
 ### Is Oracle Restart the same as Oracle RAC on Kubernetes?
 
-No. **Oracle Restart** is single-instance Oracle Database managed by Grid Infrastructure (ASM, restartability). **RAC** is multi-instance clustering. This post covers the Restart provisioning use case only.
+No. **Oracle Restart** is single-instance Oracle Database managed by Grid Infrastructure (ASM, restartability). **RAC** is multi-instance clustering. This post covers the Restart provisioning use case only. The slim image build docs live under the RAC Docker images tree even when you use the image for Oracle Restart samples.
 
 ### Which API version should I use?
 
