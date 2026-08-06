@@ -2,14 +2,16 @@
 
 Personal engineering portfolio for **Saurabh Ahuja** — Principal Member of Technical Staff at Oracle (RACPACK MAA Solution Engineering).
 
-Static site built with **Astro + Tailwind CSS + TypeScript**, deployed automatically to a free-tier **GCP VM** via a **self-hosted GitHub Actions runner**, served by **nginx** with **Let’s Encrypt** HTTPS.
+Static site built with **Astro + Tailwind CSS + TypeScript**, served by **nginx** on a free-tier **GCP VM**. Source is on GitHub; **production is updated by manual deploy today** (Actions auto-deploy is not wired to a runner for this repo yet).
 
 | | |
 |---|---|
 | **Site** | https://onenova.in · https://www.onenova.in |
 | **Email** | saurabh@onenova.in (Purelymail — **DNS for email is never modified by this project**) |
 | **Stack** | Astro 5 · Tailwind 3 · TypeScript · SSG |
-| **Deploy** | GitHub → self-hosted runner → `pnpm build` → `/var/www/onenova` → nginx |
+| **Deploy** | Push `main` → **manual** build on VM → `/var/www/onenova` → nginx (see below) |
+
+> **Important:** `git push` alone does **not** update https://onenova.in. After content changes, run the deploy steps in [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) and complete [deploy/POST_CHANGE_CHECKLIST.md](deploy/POST_CHANGE_CHECKLIST.md). Agents: read [AGENTS.md](AGENTS.md).
 
 ---
 
@@ -30,18 +32,34 @@ Static site built with **Astro + Tailwind CSS + TypeScript**, deployed automatic
 
 ---
 
+## Deploy (read this)
+
+1. Push changes to `main` on GitHub.  
+2. Deploy on the VM (or `./deploy/scripts/deploy-remote.sh` from a laptop that can SSH).  
+3. Confirm https://onenova.in shows the change — **not** only the GitHub file.
+
+Full guide: [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) · checklist: [deploy/POST_CHANGE_CHECKLIST.md](deploy/POST_CHANGE_CHECKLIST.md)
+
+**2026-08-06 lesson:** RAC blog was on GitHub but missing from the live blog index until a manual deploy. Do not skip step 2–3.
+
+---
+
 ## Repository tree
 
 ```text
 onenova/
+├── AGENTS.md               # rules for coding agents (push ≠ live)
 ├── .github/workflows/
-│   ├── deploy.yml          # main → build → /var/www/onenova
+│   ├── deploy.yml          # intended auto-deploy (needs onenova runner)
 │   └── ci.yml              # PR build check
 ├── deploy/
+│   ├── DEPLOYMENT.md       # how production works
+│   ├── POST_CHANGE_CHECKLIST.md
 │   ├── nginx/onenova.in.conf
 │   └── scripts/
 │       ├── setup-vm.sh     # one-time VM bootstrap
-│       └── deploy.sh       # rsync dist → web root, reload nginx
+│       ├── deploy.sh       # rsync dist → web root (on VM)
+│       └── deploy-remote.sh # SSH + build + rsync from laptop
 ├── public/
 │   ├── favicon.svg
 │   ├── favicon-32.png
@@ -109,7 +127,7 @@ onenova/
 ## Local development
 
 ```bash
-git clone https://github.com/sauahuja/onenova.git
+git clone https://github.com/saurabhahuja71/onenova.git
 cd onenova
 cp .env.example .env   # optional
 pnpm install

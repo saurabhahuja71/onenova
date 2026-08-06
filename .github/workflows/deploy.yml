@@ -1,4 +1,10 @@
-# Deploy onenova.in from the EXISTING GCP self-hosted runner (e.g. 136.67.97.86).
+# Deploy onenova.in via GitHub Actions (self-hosted runner).
+#
+# CURRENT REALITY (2026-08): This workflow does NOT auto-deploy in practice.
+# The VM runner is registered to Tradebots, not saurabhahuja71/onenova.
+# Until a dedicated onenova runner exists, use manual deploy:
+#   deploy/DEPLOYMENT.md · deploy/POST_CHANGE_CHECKLIST.md · AGENTS.md
+#   ./deploy/scripts/deploy-remote.sh
 #
 # Safety rules (do not break other Actions on this runner):
 # - Does not reinstall/reconfigure the Actions runner service

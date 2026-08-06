@@ -1,23 +1,50 @@
 # OneNova deployment guide
 
-**Site:** https://onenova.in (DNS may still be pending)  
+**Site:** https://onenova.in  
 **Live server:** `136.67.97.86` (GCP VM `github-runner-free`)  
 **Web root:** `/var/www/onenova`  
 **Repo:** https://github.com/saurabhahuja71/onenova  
+**Site clone on VM:** `~/onenova-site`  
+
+Related:
+
+- [POST_CHANGE_CHECKLIST.md](./POST_CHANGE_CHECKLIST.md) — required steps after every content change  
+- [AGENTS.md](../AGENTS.md) — rules for humans and coding agents  
+- [scripts/deploy-remote.sh](./scripts/deploy-remote.sh) — one-command remote deploy from a laptop  
+
+---
+
+## CRITICAL: GitHub push ≠ live site
+
+| What you did | Live on https://onenova.in? |
+|--------------|-----------------------------|
+| Edit files only on laptop | No |
+| Commit + `git push origin main` | **No** (source only) |
+| Manual deploy on VM (or a real Actions deploy job) | **Yes** |
+
+Production serves **pre-built static HTML** from `/var/www/onenova`. Updating GitHub alone never changes that directory.
+
+### Incident log (keep this)
+
+| Date | What went wrong | Fix |
+|------|-----------------|-----|
+| **2026-08-06** | Oracle RAC blog merged to `main` and pushed. https://onenova.in/blog still listed only Oracle Restart (site last built ~2026-07-30). | Manual deploy: `git reset --hard origin/main` in `~/onenova-site`, `pnpm run build:fast`, `rsync` to `/var/www/onenova`, nginx reload. |
+
+**Rule:** After any blog/page change, run the [post-change checklist](./POST_CHANGE_CHECKLIST.md) and confirm the **public URL** before saying “it’s live.”
 
 ---
 
 ## Do you need a GitHub runner to rebuild the site?
 
-**No — not required.**
+**No — not required for a correct deploy.**
 
 A GitHub Actions runner is only needed if you want **automatic** build + deploy on every push to `main`.
 
-| Approach | Auto on push? | Needs onenova runner? |
-|----------|---------------|------------------------|
-| Manual build on the VM (or SSH) | No | No |
-| Second self-hosted runner for this repo | Yes | Yes (separate from Tradebots) |
-| GitHub-hosted `ubuntu-latest` + SSH deploy | Yes | No (uses GitHub minutes) |
+| Approach | Auto on push? | Needs onenova runner? | Status (2026-08) |
+|----------|---------------|------------------------|------------------|
+| Manual build on the VM (or SSH) | No | No | **What we use today** |
+| Second self-hosted runner for this repo | Yes | Yes (separate from Tradebots) | Not configured |
+| GitHub-hosted `ubuntu-latest` + SSH deploy | Yes | No (uses GitHub minutes) | Not configured |
 
 ---
 
@@ -98,13 +125,30 @@ rsync -a --delete dist/ /var/www/onenova/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-One-liner after code is already on `main`:
+One-liner after code is already on `main` (on the VM):
 
 ```bash
-cd ~/onenova-site && git pull && source ~/.nvm/nvm.sh && nvm use 20 \
+cd ~/onenova-site && git fetch origin main && git reset --hard origin/main \
+  && source ~/.nvm/nvm.sh && nvm use 20 \
   && PUBLIC_GITHUB_USERNAME=saurabhahuja71 pnpm install \
   && pnpm run build:fast \
-  && rsync -a --delete dist/ /var/www/onenova/
+  && rsync -a --delete dist/ /var/www/onenova/ \
+  && sudo nginx -t && sudo systemctl reload nginx
+```
+
+From a laptop that can reach the VM (Oracle network + corkscrew + key):
+
+```bash
+# from a clone of saurabhahuja71/onenova
+chmod +x deploy/scripts/deploy-remote.sh
+./deploy/scripts/deploy-remote.sh
+```
+
+Then verify:
+
+```bash
+curl -sL https://onenova.in/blog/ | grep -i provision-oracle
+curl -sI https://onenova.in/blog/<slug>/
 ```
 
 ---

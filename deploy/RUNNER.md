@@ -7,6 +7,12 @@
 This machine already runs a GitHub Actions self-hosted runner used by **other** workflows.  
 OneNova setup must **not** reinstall or reconfigure that runner.
 
+> **2026-08 status:** No runner is registered to `saurabhahuja71/onenova`, so
+> push-to-`main` does **not** publish the site. Use **manual deploy**
+> ([DEPLOYMENT.md](./DEPLOYMENT.md), [POST_CHANGE_CHECKLIST.md](./POST_CHANGE_CHECKLIST.md))
+> until Option B below (second runner) or hosted deploy is enabled.
+> See also root [AGENTS.md](../AGENTS.md).
+
 ---
 
 ## What is safe vs unsafe
