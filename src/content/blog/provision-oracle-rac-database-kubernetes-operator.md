@@ -20,7 +20,7 @@ Oracle **Real Application Clusters (RAC)** is a multi-instance, shared-cache dat
 
 This guide is written for **new users**: platform engineers and DBAs who know basic `kubectl` but may not have provisioned Oracle RAC via the operator before. It follows the official use case [Provisioning an Oracle RAC Database](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/provisioning_oracle_rac_db.md) and expands it into a clear checklist, mental model, and verify-and-connect path—the same pattern as the [Oracle Restart on Kubernetes](/blog/provision-oracle-restart-database-kubernetes-operator/) post.
 
-**Companion code:** sample manifests, Multus NAD, and pre-flight scripts live in [saurabhahuja71/oracle-rac-k8s-operator-lab](https://github.com/saurabhahuja71/oracle-rac-k8s-operator-lab) (based on the official operator samples).
+Sample manifests and connection steps live in the official operator repository (for example [`racdb_prov.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/racdb_prov.yaml))—same approach as the Restart guide.
 
 **What you will achieve**
 
@@ -184,7 +184,7 @@ kubectl describe net-attach-def macvlan-conf1 -n "$NS"
 kubectl describe net-attach-def macvlan-conf2 -n "$NS"
 ```
 
-**Expect:** both NADs present; `master` interfaces and IPAM ranges match your worker private NICs. Official sample: [multus-rac-conf.yaml](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/multus-rac-conf.yaml) (also in the companion lab repo).
+**Expect:** both NADs present; `master` interfaces and IPAM ranges match your worker private NICs. Official sample: [multus-rac-conf.yaml](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/multus-rac-conf.yaml).
 
 ### 6. Worker node labels match `workerNodeSelector`
 
@@ -278,8 +278,6 @@ kubectl get pods -A | grep -iE 'oracle-database-operator|database-operator' || e
 
 echo "PRE-FLIGHT: API + secrets + NAD check attempted. Confirm node labels, shared ASM disks, Multus masters, and staged/slim image next."
 ```
-
-A copy of this script is in the companion repo: `scripts/preflight.sh`.
 
 ### 11. Host-side checks (not kubectl—but required)
 
@@ -381,8 +379,7 @@ A wrong image name is still the most common `ImagePullBackOff`—especially if y
 
 ## Understand the sample Custom Resource
 
-Official sample: [`racdb_prov.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/racdb_prov.yaml).  
-Lab copy: [oracle-rac-k8s-operator-lab/manifests/racdb_prov.yaml](https://github.com/saurabhahuja71/oracle-rac-k8s-operator-lab/blob/main/manifests/racdb_prov.yaml).
+Official sample: [`racdb_prov.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/racdb_prov.yaml).
 
 High-level structure:
 
@@ -698,8 +695,7 @@ Yes. With ClusterIP only, applications **inside** the cluster can still connect.
 - [Prerequisites](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/prerequisites_oracle_rac_db.md)  
 - [Database connection](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/database_connection.md)  
 - [RAC README / QuickStart](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/README.md)  
-- [Oracle Database Operator repository](https://github.com/oracle/oracle-database-operator)  
-- Companion lab: [saurabhahuja71/oracle-rac-k8s-operator-lab](https://github.com/saurabhahuja71/oracle-rac-k8s-operator-lab)
+- [Oracle Database Operator repository](https://github.com/oracle/oracle-database-operator)
 
 ---
 
@@ -707,6 +703,6 @@ Yes. With ClusterIP only, applications **inside** the cluster can still connect.
 
 Provisioning Oracle RAC through the Oracle Database Operator replaces a long multi-node GI/DB install with a **declarative Kubernetes object**—but only after Multus, labels, shared disks, secrets, and image plumbing are honest. For new users, success usually comes down to five things: **correct image**, **correct Multus private nets**, **shared ASM paths on labeled workers**, **valid secrets**, and **patient verification** via setup logs plus `crsctl`/`srvctl`—not only pod status.
 
-Start from the official sample YAML (or the lab repo copy), change only the fields that must match your environment, apply once, and follow the log until you see **ORACLE RAC DATABASE IS READY TO USE**. From there, connect with SQL\*Plus through SCAN and treat the CR as the source of desired state for future reconciles (scale-out, ASM disks, and related lifecycle operations are covered in the upstream RAC docs).
+Start from the official sample YAML, change only the fields that must match your environment, apply once, and follow the log until you see **ORACLE RAC DATABASE IS READY TO USE**. From there, connect with SQL\*Plus through SCAN and treat the CR as the source of desired state for future reconciles (scale-out, ASM disks, and related lifecycle operations are covered in the upstream RAC docs).
 
 If you already shipped the [Oracle Restart](/blog/provision-oracle-restart-database-kubernetes-operator/) path, this RAC guide is the natural next step on the same operator platform—with more networking and shared storage discipline up front.

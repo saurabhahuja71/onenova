@@ -54,5 +54,5 @@
   <text x="847" y="156" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">SQL*Plus soepdb</text>
 
   <text x="32" y="230" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">First install is slow: GI + RAC multi-node config. Watch /tmp/orod/oracle_db_setup.log until READY — pod Running alone is not enough.</text>
-  <text x="32" y="252" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Companion samples: github.com/saurabhahuja71/oracle-rac-k8s-operator-lab</text>
+  <text x="32" y="252" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Samples: oracle/oracle-database-operator docs/rac/provisioning (racdb_prov.yaml)</text>
 </svg>

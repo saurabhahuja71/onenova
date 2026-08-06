@@ -31,19 +31,6 @@ export const curatedProjects: Project[] = [
     source: 'curated',
   },
   {
-    name: 'oracle-rac-k8s-operator-lab',
-    description:
-      'Companion manifests and pre-flight scripts for provisioning Oracle RAC with Oracle Database Operator on Kubernetes (blog lab).',
-    url: 'https://github.com/saurabhahuja71/oracle-rac-k8s-operator-lab',
-    homepage:
-      'https://onenova.in/blog/provision-oracle-rac-database-kubernetes-operator/',
-    language: 'Shell',
-    topics: ['oracle-rac', 'kubernetes', 'operators', 'asm'],
-    image: '/images/projects/k8s-operator.svg',
-    featured: true,
-    source: 'curated',
-  },
-  {
     name: 'oracle/docker-images',
     description:
       'Official Oracle Docker images — Database, Instant Client, and related container build patterns.',
