@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" role="img" aria-labelledby="title desc">
+  <title id="title">Oracle RAC on Kubernetes / OKE architecture</title>
+  <desc id="desc">Shows Oracle Database Operator reconciling a RacDatabase custom resource into two RAC pods, VIP/SCAN/headless services, secrets, Multus private networks, shared ASM disks, and host software paths on labeled worker nodes.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="720" rx="16" fill="url(#bg)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">Oracle RAC on Kubernetes / OKE</text>
+  <text x="32" y="62" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">2 pods · VIP/SCAN services · Multus private nets · shared ASM — not product-internal GI diagrams</text>
+
+  <rect x="24" y="84" width="912" height="612" rx="14" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="40" y="108" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.06em">KUBERNETES CLUSTER (OCNE / OKE OR ANY SUPPORTED CNCF CLUSTER)</text>
+
+  <!-- You -->
+  <g filter="url(#soft)">
+    <rect x="40" y="128" width="150" height="72" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="115" y="158" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600">You / CI</text>
+  <text x="115" y="178" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">kubectl apply CR</text>
+
+  <line x1="190" y1="164" x2="248" y2="164" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- RacDatabase CR -->
+  <g filter="url(#soft)">
+    <rect x="250" y="120" width="200" height="88" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="350" y="148" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">CUSTOM RESOURCE</text>
+  <text x="350" y="170" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">RacDatabase</text>
+  <text x="350" y="190" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="10">database.oracle.com/v4</text>
+
+  <!-- Operator -->
+  <g filter="url(#soft)">
+    <rect x="500" y="120" width="220" height="88" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="610" y="148" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">OPERATOR NS</text>
+  <text x="610" y="170" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">Oracle Database Operator</text>
+  <text x="610" y="190" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">RAC controller reconcile</text>
+
+  <line x1="450" y1="164" x2="498" y2="164" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="500" y1="180" x2="450" y2="180" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowMuted)"/>
+  <text x="475" y="152" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9">watch</text>
+  <text x="475" y="198" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="9">status</text>
+
+  <line x1="610" y1="208" x2="610" y2="248" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="630" y="236" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">creates / manages</text>
+
+  <!-- Namespace rac -->
+  <rect x="40" y="252" width="880" height="420" rx="12" fill="#0b1220" stroke="#475569" stroke-width="1.5"/>
+  <text x="56" y="276" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.05em">NAMESPACE: rac (sample)</text>
+
+  <!-- Secrets -->
+  <g filter="url(#soft)">
+    <rect x="56" y="296" width="170" height="110" rx="10" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="141" y="322" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">SECRETS</text>
+  <text x="141" y="344" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ssh-key-secret</text>
+  <text x="141" y="362" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">db-user-pass</text>
+  <text x="141" y="380" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">tdeWallet (optional)</text>
+  <text x="141" y="396" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">referenced by CR</text>
+
+  <!-- Multus NADs -->
+  <g filter="url(#soft)">
+    <rect x="246" y="296" width="180" height="110" rx="10" fill="url(#card)" stroke="#fb7185" stroke-width="1.5"/>
+  </g>
+  <text x="336" y="322" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">MULTUS (NAD)</text>
+  <text x="336" y="344" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">macvlan-conf1</text>
+  <text x="336" y="362" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">macvlan-conf2</text>
+  <text x="336" y="386" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">private interconnect</text>
+
+  <!-- Services -->
+  <g filter="url(#soft)">
+    <rect x="446" y="296" width="220" height="110" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="556" y="322" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">SERVICES</text>
+  <text x="556" y="344" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">racnode-scan · *-vip</text>
+  <text x="556" y="362" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">headless hostnames</text>
+  <text x="556" y="380" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">SCAN/NodePort 1521</text>
+  <text x="556" y="396" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">client SQL*Net</text>
+
+  <!-- Selector label -->
+  <g filter="url(#soft)">
+    <rect x="686" y="296" width="214" height="110" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="793" y="322" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">NODE SELECTOR</text>
+  <text x="793" y="348" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">raccluster=raccluster01</text>
+  <text x="793" y="372" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">eligible worker pool</text>
+  <text x="793" y="392" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">label ≥ nodeCount nodes</text>
+
+  <!-- Pod 1 -->
+  <g filter="url(#soft)">
+    <rect x="56" y="440" width="250" height="120" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="181" y="468" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">STATEFULSET / POD</text>
+  <text x="181" y="492" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700">racnode1-0</text>
+  <text x="181" y="514" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">GI + RAC instance 1</text>
+  <text x="181" y="534" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace" font-size="10">slim image · public + eth1/2</text>
+
+  <!-- Pod 2 -->
+  <g filter="url(#soft)">
+    <rect x="326" y="440" width="250" height="120" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="451" y="468" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">STATEFULSET / POD</text>
+  <text x="451" y="492" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700">racnode2-0</text>
+  <text x="451" y="514" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">GI + RAC instance 2</text>
+  <text x="451" y="534" text-anchor="middle" fill="#64748b" font-family="ui-monospace, monospace" font-size="10">slim image · public + eth1/2</text>
+
+  <!-- Shared storage / workers -->
+  <g filter="url(#soft)">
+    <rect x="596" y="440" width="304" height="120" rx="10" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="748" y="468" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">WORKER NODES (SHARED)</text>
+  <text x="748" y="492" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ASM disks (by-partlabel)</text>
+  <text x="748" y="512" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">racHostSwLocation mounts</text>
+  <text x="748" y="532" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">hostSwStageLocation · Multus NICs</text>
+
+  <!-- Private interconnect hint -->
+  <line x1="306" y1="500" x2="326" y2="500" stroke="#fb7185" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="316" y="580" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">private interconnect (Multus)</text>
+  <text x="316" y="600" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">cluster interconnect · not Flannel public path</text>
+  <text x="700" y="600" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">shared block → ASM DATA diskgroup</text>
+  <line x1="576" y1="500" x2="596" y2="500" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="181" y1="560" x2="181" y2="590" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <line x1="451" y1="560" x2="451" y2="590" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <line x1="181" y1="590" x2="748" y2="590" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3 2"/>
+</svg>

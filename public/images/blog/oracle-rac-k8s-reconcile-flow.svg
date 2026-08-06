@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 280" role="img" aria-labelledby="title3 desc3">
+  <title id="title3">Provision flow for Oracle RAC on Kubernetes</title>
+  <desc id="desc3">Left-to-right flow from pre-check and Multus/slim image through apply, RAC reconcile, ready, and SQL connect via SCAN.</desc>
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+  </defs>
+  <rect width="960" height="280" rx="16" fill="url(#bg3)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700">Provision flow (what you do vs what the cluster does)</text>
+
+  <rect x="20" y="80" width="128" height="100" rx="10" fill="#1e293b" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="84" y="115" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">1. Pre-flight</text>
+  <text x="84" y="138" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">CRD · Multus NAD</text>
+  <text x="84" y="156" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">labels · secrets</text>
+
+  <line x1="148" y1="130" x2="164" y2="130" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <rect x="166" y="80" width="128" height="100" rx="10" fill="#1e293b" stroke="#fb7185" stroke-width="1.5"/>
+  <text x="230" y="115" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">2. Slim image</text>
+  <text x="230" y="138" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">build RAC slim</text>
+  <text x="230" y="156" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">shared ASM disks</text>
+
+  <line x1="294" y1="130" x2="310" y2="130" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <rect x="312" y="80" width="128" height="100" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="376" y="115" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">3. Apply CR</text>
+  <text x="376" y="138" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">RacDatabase YAML</text>
+  <text x="376" y="156" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">namespace rac</text>
+
+  <line x1="440" y1="130" x2="456" y2="130" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <rect x="458" y="80" width="140" height="100" rx="10" fill="#1e293b" stroke="#34d399" stroke-width="1.5"/>
+  <text x="528" y="115" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">4. RAC controller</text>
+  <text x="528" y="138" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">2 pods · VIP/SCAN</text>
+  <text x="528" y="156" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">GI + ASM + DB</text>
+
+  <line x1="598" y1="130" x2="614" y2="130" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <rect x="616" y="80" width="128" height="100" rx="10" fill="#1e293b" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="680" y="115" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">5. Ready</text>
+  <text x="680" y="138" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">setup log banner</text>
+  <text x="680" y="156" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">crsctl / srvctl</text>
+
+  <line x1="744" y1="130" x2="760" y2="130" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr3)"/>
+
+  <rect x="762" y="80" width="170" height="100" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="847" y="115" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">6. Connect</text>
+  <text x="847" y="138" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">SCAN NodePort</text>
+  <text x="847" y="156" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">SQL*Plus soepdb</text>
+
+  <text x="32" y="230" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">First install is slow: GI + RAC multi-node config. Watch /tmp/orod/oracle_db_setup.log until READY — pod Running alone is not enough.</text>
+  <text x="32" y="252" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Companion samples: github.com/saurabhahuja71/oracle-rac-k8s-operator-lab</text>
+</svg>
