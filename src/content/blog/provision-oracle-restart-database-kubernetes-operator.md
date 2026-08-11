@@ -2,7 +2,7 @@
 title: "Provision an Oracle Restart Database on Kubernetes with Oracle Database Operator"
 description: "Kubernetes/OKE architecture for Oracle Restart: operator, CR, pod, Services, Secrets, node ASM; kubectl pre-flight; build slim image from GitHub; provision and connect."
 pubDate: 2026-07-30
-updatedDate: 2026-07-30
+updatedDate: 2026-08-11
 author: "Saurabh Ahuja"
 tags:
   - oracle
@@ -19,6 +19,12 @@ draft: false
 Oracle Restart combines **Oracle Grid Infrastructure** with a **single-instance Oracle Database** so storage (ASM), listeners, and the instance restart cleanly after failures. On Kubernetes, the [Oracle Database Operator](https://github.com/oracle/oracle-database-operator) can provision that stack for you through an `OracleRestart` custom resource—so you declare desired state in YAML and let the controller build pods, volumes, and software mounts.
 
 This guide is written for **new users**: platform engineers and DBAs who know basic `kubectl` but may not have provisioned Oracle Restart via the operator before. It follows the official use case [Provisioning an Oracle Restart Database](https://github.com/oracle/oracle-database-operator/blob/main/docs/oraclerestart/provisioning/provisioning_oracle_restart_db.md) and expands it into a clear checklist, mental model, and verify-and-connect path.
+
+> **Operator version applicability (2.1):** this guide targets the **Oracle Database Operator 2.1** release line and the `database.oracle.com/v4` `OracleRestart` API shown in the sample. The 2.2 release adds only optional fields, so the sample YAML in this post remains valid. Notable 2.1→2.2 deltas:
+>
+> - `dbSecret` gained optional `key` and `encryptionType: base64` (for base64-encoded pwdfile secrets).
+> - A separate `tdeWalletSecret` (same shape as `dbSecret`) can be specified.
+> - `envVars` live under `spec.instDetails` (e.g. `LOG_DIR`, `ORA_LOG_MAX_BYTES`, or the existing `IGNORE_CRS_PREREQS` / `IGNORE_DB_PREREQS`).
 
 **What you will achieve**
 
@@ -715,7 +721,7 @@ No. **Oracle Restart** is single-instance Oracle Database managed by Grid Infras
 
 ### Which API version should I use?
 
-The current sample uses `apiVersion: database.oracle.com/v4` and `kind: OracleRestart`. Always match the CRD version shipped with your installed operator release.
+This guide targets operator **2.1** with `apiVersion: database.oracle.com/v4` and `kind: OracleRestart`. In 2.2 the `v4` API only adds optional fields (`key`, `encryptionType: base64`, `tdeWalletSecret`); the sample above is unchanged—see the version note at the top. Always match the CRD version shipped with your installed operator release.
 
 ### Can I run this without NodePort or LoadBalancer?
 

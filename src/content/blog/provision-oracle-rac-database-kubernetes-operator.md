@@ -2,7 +2,7 @@
 title: "Provision an Oracle RAC Database on Kubernetes with Oracle Database Operator"
 description: "Kubernetes/OCNE architecture for Oracle RAC: operator, RacDatabase CR, two pods, VIP/SCAN services, Multus, shared ASM; kubectl pre-flight; build slim image; provision and connect."
 pubDate: 2026-08-06
-updatedDate: 2026-08-06
+updatedDate: 2026-08-11
 author: "Saurabh Ahuja"
 tags:
   - oracle
@@ -21,6 +21,12 @@ Oracle **Real Application Clusters (RAC)** is a multi-instance, shared-cache dat
 This guide is written for **new users**: platform engineers and DBAs who know basic `kubectl` but may not have provisioned Oracle RAC via the operator before. It follows the official use case [Provisioning an Oracle RAC Database](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/provisioning_oracle_rac_db.md) and expands it into a clear checklist, mental model, and verify-and-connect path—the same pattern as the [Oracle Restart on Kubernetes](/blog/provision-oracle-restart-database-kubernetes-operator/) post.
 
 Sample manifests and connection steps live in the official operator repository (for example [`racdb_prov.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/docs/rac/provisioning/racdb_prov.yaml))—same approach as the Restart guide.
+
+> **Operator version applicability (2.1):** this guide targets the **Oracle Database Operator 2.1** release line and the `database.oracle.com/v4` `RacDatabase` API shown in the sample. The 2.2 release keeps the same `v4` API, and the sample YAML in this post remains valid. Notable 2.1→2.2 deltas:
+>
+> - Legacy top-level `instDetails` (per-instance list) was removed—use `instanceDetails` as this guide does.
+> - The spec-level software `storageClass` field was renamed to **`swStorageClass`**; new optional fields `swLocStorageSizeInGb`, `isKeep`, `racSwPrefix`, and software-stage PVC fields `swStagePvc` / `swStagePvcMountLocation` were added. Software storage source must be **exactly one** of `instanceDetails.racHostSwLocation`, `racSwPrefix`, or `swStorageClass`.
+> - `dbSecret` / `tdeWalletSecret` gained optional `key` and `pkeyopt` fields (e.g. `encryptionType: pkeyutl`).
 
 **What you will achieve**
 
@@ -682,7 +688,7 @@ Yes for the supported private interconnect model in the official OCNE-oriented d
 
 ### Which API version should I use?
 
-The current sample uses `apiVersion: database.oracle.com/v4` and `kind: RacDatabase`. Always match the CRD version shipped with your installed operator release.
+This guide targets operator **2.1** with `apiVersion: database.oracle.com/v4` and `kind: RacDatabase`. In 2.2 the API remains `v4` and the sample above is unchanged—see the version note at the top for the small field deltas (`swStorageClass` rename, legacy `instDetails` removed, optional secret `key` / `pkeyopt`). Always match the CRD version shipped with your installed operator release.
 
 ### Can I run this without NodePort?
 
