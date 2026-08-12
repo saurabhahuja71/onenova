@@ -2,16 +2,16 @@
 
 Personal engineering portfolio for **Saurabh Ahuja** — Principal Member of Technical Staff at Oracle (RACPACK MAA Solution Engineering).
 
-Static site built with **Astro + Tailwind CSS + TypeScript**, served by **nginx** on a free-tier **GCP VM**. Source is on GitHub; **production is updated by manual deploy today** (Actions auto-deploy is not wired to a runner for this repo yet).
+Static site built with **Astro + Tailwind CSS + TypeScript**, served by **nginx** on a free-tier **GCP VM**. Source is on GitHub; **pushing to `main` auto-deploys** via GitHub Actions (GitHub-hosted runner + SSH deploy key).
 
 | | |
 |---|---|
 | **Site** | https://onenova.in · https://www.onenova.in |
 | **Email** | saurabh@onenova.in (Purelymail — **DNS for email is never modified by this project**) |
 | **Stack** | Astro 5 · Tailwind 3 · TypeScript · SSG |
-| **Deploy** | Push `main` → **manual** build on VM → `/var/www/onenova` → nginx (see below) |
+| **Deploy** | Push `main` → Actions build → rsync to VM `/var/www/onenova` → nginx reload (see below) |
 
-> **Important:** `git push` alone does **not** update https://onenova.in. After content changes, run the deploy steps in [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) and complete [deploy/POST_CHANGE_CHECKLIST.md](deploy/POST_CHANGE_CHECKLIST.md). Agents: read [AGENTS.md](AGENTS.md).
+> **Auto-deploy:** pushing to `main` triggers the **Deploy OneNova** workflow. It builds on `ubuntu-latest` and deploys over SSH to the VM. Monitor it under the repo’s **Actions** tab. Agents: read [AGENTS.md](AGENTS.md).
 
 ---
 
@@ -34,13 +34,13 @@ Static site built with **Astro + Tailwind CSS + TypeScript**, served by **nginx*
 
 ## Deploy (read this)
 
-1. Push changes to `main` on GitHub.  
-2. Deploy on the VM (or `./deploy/scripts/deploy-remote.sh` from a laptop that can SSH).  
+1. Push changes to `main` on GitHub — the **Deploy OneNova** workflow runs automatically.
+2. Watch it finish under the **Actions** tab (build → SSH rsync → nginx reload).
 3. Confirm https://onenova.in shows the change — **not** only the GitHub file.
 
 Full guide: [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) · checklist: [deploy/POST_CHANGE_CHECKLIST.md](deploy/POST_CHANGE_CHECKLIST.md)
 
-**2026-08-06 lesson:** RAC blog was on GitHub but missing from the live blog index until a manual deploy. Do not skip step 2–3.
+**2026-08-06 lesson:** RAC blog was on GitHub but missing from the live blog index until a manual deploy. Even with auto-deploy, always verify the live URL after content changes.
 
 ---
 
@@ -50,7 +50,7 @@ Full guide: [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) · checklist: [deploy/P
 onenova/
 ├── AGENTS.md               # rules for coding agents (push ≠ live)
 ├── .github/workflows/
-│   ├── deploy.yml          # intended auto-deploy (needs onenova runner)
+│   ├── deploy.yml          # auto-deploy: Actions build + SSH rsync → VM (active)
 │   └── ci.yml              # PR build check
 ├── deploy/
 │   ├── DEPLOYMENT.md       # how production works
@@ -59,7 +59,8 @@ onenova/
 │   └── scripts/
 │       ├── setup-vm.sh     # one-time VM bootstrap
 │       ├── deploy.sh       # rsync dist → web root (on VM)
-│       └── deploy-remote.sh # SSH + build + rsync from laptop
+│       ├── deploy-remote.sh # SSH + build + rsync from laptop
+│       └── deploy-remote-github.sh # Actions: SSH rsync + nginx reload
 ├── public/
 │   ├── favicon.svg
 │   ├── favicon-32.png
@@ -276,20 +277,19 @@ sudo chmod 440 /etc/sudoers.d/onenova-deploy
 
 ---
 
-## Deployment (runner optional)
+## Deployment (auto via Actions)
 
-**You do not need a GitHub runner for this repo just to publish.**  
-Manual build on the VM is enough. Full detail: **[deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md)**.
+**Pushing to `main` auto-deploys.** Build happens on a GitHub-hosted `ubuntu-latest` runner; only static files are pushed to the VM over SSH. Full detail: **[deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md)**.
 
 ## How GitHub Actions deploy works
 
 ```text
 git push → GitHub
-         → self-hosted runner (this VM)
+         → GitHub-hosted runner (ubuntu-latest)
          → pnpm install
          → pnpm build:fast   (Astro SSG → dist/)
-         → deploy/scripts/deploy.sh
-              rsync dist/ → /var/www/onenova
+         → deploy/scripts/deploy-remote-github.sh
+              ssh + rsync dist/ → /var/www/onenova
               sudo nginx -t && sudo systemctl reload nginx
 ```
 
@@ -300,9 +300,13 @@ Triggers:
 - Push to `main` / `master`
 - Manual **workflow_dispatch**
 
-### Runner
+### Deploy secrets (required for auto-deploy)
 
-Your existing self-hosted runner must be **online** and listening for jobs labeled `self-hosted`. No GitHub-hosted minutes are required.
+| Secret | Purpose |
+|--------|---------|
+| `ONENOVA_SSH_HOST` | VM address (`136.67.97.86`) |
+| `ONENOVA_SSH_USER` | SSH user (`sauahuja`) |
+| `ONENOVA_SSH_KEY` | Private ed25519 deploy key authorized on the VM |
 
 ### Secrets (optional)
 
@@ -313,12 +317,13 @@ Your existing self-hosted runner must be **online** and listening for jobs label
 
 `GITHUB_TOKEN` is provided automatically by Actions for public REST calls.
 
-### Manual deploy
+### Manual deploy (fallback)
 
 ```bash
 pnpm install
 pnpm build:fast
-./deploy/scripts/deploy.sh
+./deploy/scripts/deploy.sh          # on the VM
+./deploy/scripts/deploy-remote.sh   # from a laptop that can SSH
 ```
 
 ---

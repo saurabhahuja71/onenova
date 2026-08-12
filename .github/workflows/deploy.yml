@@ -1,21 +1,20 @@
-# Deploy onenova.in via GitHub Actions (self-hosted runner).
+# Deploy onenova.in via GitHub Actions (GitHub-hosted runner + SSH).
 #
-# CURRENT REALITY (2026-08): This workflow does NOT auto-deploy in practice.
-# The VM runner is registered to Tradebots, not saurabhahuja71/onenova.
-# Until a dedicated onenova runner exists, use manual deploy:
-#   deploy/DEPLOYMENT.md · deploy/POST_CHANGE_CHECKLIST.md · AGENTS.md
-#   ./deploy/scripts/deploy-remote.sh
+# No self-hosted runner is required. On every push to main this workflow:
+#   1. Builds the Astro static site on ubuntu-latest
+#   2. rsyncs dist/ → sauahuja@136.67.97.86:/var/www/onenova (via SSH deploy key)
+#   3. Runs `sudo nginx -t && sudo systemctl reload nginx` on the VM
 #
-# Safety rules (do not break other Actions on this runner):
-# - Does not reinstall/reconfigure the Actions runner service
-# - Uses Node/pnpm already on the runner (nvm) when present
-# - Only writes to /var/www/onenova
-# - Only reloads nginx if config test passes
-# - Does not change other repos' workflows or runner labels
+# Repo secrets required:
+#   ONENOVA_SSH_HOST     VM address (default 136.67.97.86)
+#   ONENOVA_SSH_USER     SSH user (default sauahuja)
+#   ONENOVA_SSH_KEY      private ed25519 key authorized on the VM
+# Optional:
+#   PERSONAL_GITHUB_TOKEN    higher GitHub API limits for stats/projects
+#   PUBLIC_FORMSPREE_ID      contact form backend id
 #
-# Optional: add a runner label "onenova" and set runs-on below to
-#   [self-hosted, onenova]
-# if this machine is shared and you want isolation by label.
+# git push origin main  →  site updates automatically.
+
 name: Deploy OneNova
 
 on:
@@ -31,106 +30,61 @@ permissions:
   contents: read
 
 env:
-  WEB_ROOT: /var/www/onenova
   PUBLIC_SITE_URL: https://onenova.in
   PUBLIC_GITHUB_USERNAME: saurabhahuja71
-  # Corporate proxy on some Oracle/GCP hybrid paths (no-op if unset on pure GCP)
-  # http_proxy / https_proxy can also be set as runner env vars system-wide.
 
 jobs:
   deploy:
-    name: Build & deploy (self-hosted)
-    # Shared runner: keep generic self-hosted so existing machine picks it up.
-    # If you add label "onenova" on the runner, prefer:
-    # runs-on: [self-hosted, onenova]
-    runs-on: self-hosted
-    timeout-minutes: 30
+    name: Build & deploy to onenova.in
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use existing Node / pnpm (non-destructive)
-        shell: bash
+      - name: Set up Node & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable pnpm
         run: |
-          set -euo pipefail
-          # Prefer nvm already used by other workflows on this runner
-          export NVM_DIR="${HOME}/.nvm"
-          if [[ -s "${NVM_DIR}/nvm.sh" ]]; then
-            # shellcheck disable=SC1090
-            . "${NVM_DIR}/nvm.sh"
-            # Use installed 20 if present; do NOT force reinstall every run
-            nvm use 20 >/dev/null 2>&1 || nvm use default >/dev/null 2>&1 || true
-          fi
-
-          if ! command -v node >/dev/null 2>&1; then
-            echo "ERROR: node not found on runner. Install once with nvm as the runner user."
-            exit 1
-          fi
-          node -v
-
-          if ! command -v pnpm >/dev/null 2>&1; then
-            # User-local only — avoid global npm -g when possible
-            if command -v corepack >/dev/null 2>&1; then
-              corepack enable || true
-              corepack prepare pnpm@9.15.0 --activate || true
-            fi
-          fi
-          if ! command -v pnpm >/dev/null 2>&1; then
-            echo "ERROR: pnpm not found. Install once: corepack prepare pnpm@9.15.0 --activate"
-            exit 1
-          fi
-          pnpm -v
-
-          NODE_BIN="$(dirname "$(command -v node)")"
-          PNPM_BIN="$(dirname "$(command -v pnpm)")"
-          echo "${NODE_BIN}" >> "$GITHUB_PATH"
-          echo "${PNPM_BIN}" >> "$GITHUB_PATH"
-          {
-            echo "NVM_DIR=${NVM_DIR}"
-          } >> "$GITHUB_ENV"
+          corepack enable
+          corepack prepare pnpm@9.15.0 --activate
+          pnpm --version
 
       - name: Install dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          [[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]] && . "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
-          nvm use 20 >/dev/null 2>&1 || nvm use default >/dev/null 2>&1 || true
-          pnpm install --frozen-lockfile || pnpm install
+        run: pnpm install --frozen-lockfile || pnpm install
 
       - name: Build Astro site
-        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PERSONAL_GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
           PUBLIC_GITHUB_USERNAME: ${{ env.PUBLIC_GITHUB_USERNAME }}
           PUBLIC_FORMSPREE_ID: ${{ secrets.PUBLIC_FORMSPREE_ID }}
           PUBLIC_SITE_URL: ${{ env.PUBLIC_SITE_URL }}
-        run: |
-          set -euo pipefail
-          [[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]] && . "${NVM_DIR:-$HOME/.nvm}/nvm.sh"
-          nvm use 20 >/dev/null 2>&1 || nvm use default >/dev/null 2>&1 || true
-          pnpm run build:fast
+        run: pnpm run build:fast
 
-      - name: Deploy static files to /var/www/onenova only
-        shell: bash
+      - name: Install SSH key for deploy
+        env:
+          ONENOVA_SSH_KEY: ${{ secrets.ONENOVA_SSH_KEY }}
         run: |
-          set -euo pipefail
-          chmod +x deploy/scripts/deploy.sh
-          # Only this directory is written — never actions-runner or other sites
-          WEB_ROOT="${WEB_ROOT}" DIST_DIR=dist ./deploy/scripts/deploy.sh
+          install -m 600 /dev/null /tmp/onenova_deploy_key
+          printf '%s\n' "$ONENOVA_SSH_KEY" > /tmp/onenova_deploy_key
 
-      - name: Verify deploy (local)
-        shell: bash
+      - name: Deploy to VM (rsync + nginx reload)
+        env:
+          ONENOVA_SSH_HOST: ${{ secrets.ONENOVA_SSH_HOST }}
+          ONENOVA_SSH_USER: ${{ secrets.ONENOVA_SSH_USER }}
+          ONENOVA_SSH_KEY_FILE: /tmp/onenova_deploy_key
+          DIST_DIR: dist
+        run: bash deploy/scripts/deploy-remote-github.sh
+
+      - name: Verify public site
         run: |
-          set -euo pipefail
-          test -f "${WEB_ROOT}/index.html"
-          echo "Deployed files:"
-          ls -la "${WEB_ROOT}" | head -20
-          # Soft health checks — do not fail the job if nginx not ready yet
-          if command -v curl >/dev/null 2>&1; then
-            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1/ || true)"
-            echo "localhost HTTP status: ${code}"
-            code_ip="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 5 -H 'Host: onenova.in' http://127.0.0.1/ || true)"
-            echo "Host: onenova.in status: ${code_ip}"
-          fi
+          sleep 2
+          code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 https://onenova.in/ || true)"
+          echo "https://onenova.in status: ${code}"
+          test "${code}" = "200"

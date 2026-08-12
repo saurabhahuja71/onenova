@@ -2,16 +2,19 @@
 
 Read this **before** claiming a site change is “done” or “live on onenova.in”.
 
-## Critical: `git push` is not a deploy
+## Deploy model: `git push` triggers auto-deploy
 
 | Layer | What it means |
 |-------|----------------|
 | **GitHub** `saurabhahuja71/onenova` `main` | Source of truth for content and code |
+| **GitHub Actions** `.github/workflows/deploy.yml` | Builds site on `ubuntu-latest`, rsyncs `dist/` to the VM, reloads nginx |
 | **Live site** https://onenova.in | Static files on GCP VM under `/var/www/onenova` |
 
-**Pushing to `main` alone does not update https://onenova.in.**
+**Pushing to `main` auto-deploys https://onenova.in** (GitHub-hosted runner + SSH deploy key — no self-hosted runner needed).
 
-There is a GitHub Actions workflow (`.github/workflows/deploy.yml`), but as of 2026-08 it is **not** effectively auto-running for this repo: the VM’s self-hosted runner is **scoped to another project** (Tradebots), not `saurabhahuja71/onenova`. Until a dedicated onenova runner (or hosted deploy) is configured, **manual deploy is required**.
+- Repo secrets: `ONENOVA_SSH_HOST`, `ONENOVA_SSH_USER`, `ONENOVA_SSH_KEY`
+- Deploy script: `deploy/scripts/deploy-remote-github.sh`
+- Manual deploy still possible via `deploy/scripts/deploy-remote.sh`
 
 ### Incident (do not repeat)
 
@@ -20,14 +23,14 @@ There is a GitHub Actions workflow (`.github/workflows/deploy.yml`), but as of 2
 ## After any change that should appear on the site
 
 1. Commit and push to `main` on GitHub.
-2. **Deploy** (manual steps in [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) or one-liner below).
+2. The **Deploy OneNova** workflow runs automatically (watch it under Actions).
 3. **Verify live:**
    - Blog index: https://onenova.in/blog  
    - New post URL (example): https://onenova.in/blog/&lt;slug&gt;/  
    - Hard-refresh / check `last-modified` if Cloudflare caches
 4. Only then tell the user the change is live.
 
-### Manual deploy one-liner (from a machine that can SSH to the VM)
+### Manual deploy fallback (if Actions is down or you need it now)
 
 From Oracle corp network, SSH needs corkscrew:
 

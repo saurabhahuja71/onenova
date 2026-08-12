@@ -10,19 +10,30 @@ Related:
 
 - [POST_CHANGE_CHECKLIST.md](./POST_CHANGE_CHECKLIST.md) — required steps after every content change  
 - [AGENTS.md](../AGENTS.md) — rules for humans and coding agents  
+- [scripts/deploy-remote-github.sh](./scripts/deploy-remote-github.sh) — Actions deploy (SSH rsync + nginx reload)  
 - [scripts/deploy-remote.sh](./scripts/deploy-remote.sh) — one-command remote deploy from a laptop  
 
 ---
 
-## CRITICAL: GitHub push ≠ live site
+## What happens on a normal push (auto-deploy, active)
 
 | What you did | Live on https://onenova.in? |
 |--------------|-----------------------------|
 | Edit files only on laptop | No |
-| Commit + `git push origin main` | **No** (source only) |
-| Manual deploy on VM (or a real Actions deploy job) | **Yes** |
+| Commit + `git push origin main` | **Yes** (Deploy OneNova workflow runs) |
+| Manual deploy on VM | Yes (fallback) |
 
-Production serves **pre-built static HTML** from `/var/www/onenova`. Updating GitHub alone never changes that directory.
+**How it works:** pushing to `main` triggers `.github/workflows/deploy.yml`. It builds on a GitHub-hosted `ubuntu-latest` runner and then runs `deploy/scripts/deploy-remote-github.sh`, which rsyncs `dist/` → `/var/www/onenova` over SSH (deploy key) and reloads nginx. No self-hosted runner is involved.
+
+Repo secrets wired to the workflow:
+
+| Secret | Value |
+|--------|-------|
+| `ONENOVA_SSH_HOST` | `136.67.97.86` |
+| `ONENOVA_SSH_USER` | `sauahuja` |
+| `ONENOVA_SSH_KEY` | private ed25519 key; public half authorized on the VM |
+
+Watch the run under the repo’s **Actions** tab after every push.
 
 ### Incident log (keep this)
 
@@ -36,21 +47,19 @@ Production serves **pre-built static HTML** from `/var/www/onenova`. Updating Gi
 
 ## Do you need a GitHub runner to rebuild the site?
 
-**No — not required for a correct deploy.**
-
-A GitHub Actions runner is only needed if you want **automatic** build + deploy on every push to `main`.
+**No.** The current auto-deploy uses a **GitHub-hosted** runner (`ubuntu-latest`) plus an SSH deploy key — no self-hosted runner, no extra VM resources.
 
 | Approach | Auto on push? | Needs onenova runner? | Status (2026-08) |
 |----------|---------------|------------------------|------------------|
-| Manual build on the VM (or SSH) | No | No | **What we use today** |
-| Second self-hosted runner for this repo | Yes | Yes (separate from Tradebots) | Not configured |
-| GitHub-hosted `ubuntu-latest` + SSH deploy | Yes | No (uses GitHub minutes) | Not configured |
+| GitHub-hosted `ubuntu-latest` + SSH deploy | Yes | No (uses GitHub minutes) | **Active today** |
+| Manual build on the VM (or SSH) | No | No | Fallback |
+| Second self-hosted runner for this repo | Yes | Yes (separate from Tradebots) | Not needed |
 
 ---
 
 ## Current state (important)
 
-The VM at **136.67.97.86** already runs a self-hosted runner for:
+The VM at **136.67.97.86** runs a self-hosted runner that belongs to another project:
 
 ```text
 Tradebots71/covered_call_bot
@@ -59,13 +68,7 @@ path: ~/actions-runner
 service: actions.runner.Tradebots71-covered_call_bot.fyers-gcp-free.service
 ```
 
-That runner is **repo-scoped to Tradebots only**. It does **not** pick up jobs from `saurabhahuja71/onenova`.
-
-So the workflow **Deploy OneNova** (`.github/workflows/deploy.yml`) will **not** run on this machine until you either:
-
-1. Install a **second** runner registered to `saurabhahuja71/onenova`, or  
-2. Switch the workflow to GitHub-hosted runners + remote deploy, or  
-3. Keep deploying manually (what we use today).
+That runner is **repo-scoped to Tradebots only** and is left untouched. **OneNova does not use it** — the deploy workflow is on GitHub-hosted runners.
 
 **Do not reconfigure or re-register the Tradebots runner** for onenova — that can break other Actions on that host.
 
@@ -77,7 +80,8 @@ So the workflow **Deploy OneNova** (`.github/workflows/deploy.yml`) will **not**
 - **Node 20 + pnpm** via user-local **nvm** (`~/.nvm`) — does not replace system tools for other jobs
 - **Site clone:** `~/onenova-site`
 - **Scoped sudoers** for nginx reload only: `/etc/sudoers.d/onenova-deploy`
-- **GCP firewall tags:** `http-server`, `https-server`
+- **SSH deploy key** authorized: `github-actions-onenova-deploy` in `~/.ssh/authorized_keys` (used by the Actions workflow)
+- **GCP firewall tags:** `http-server`, `https-server` (+ port 22 open for GitHub runner SSH)
 - **Tradebots runner:** left running and unchanged
 
 ### Check the live site by IP
@@ -100,7 +104,7 @@ http://136.67.97.86/resume/Saurabh-Ahuja-Latest.docx
 
 ---
 
-## Option A — Manual deploy (no runner for onenova)
+## Option A — Manual deploy (fallback; no Actions required)
 
 SSH to the VM (from Oracle network use corkscrew if needed):
 
@@ -153,9 +157,9 @@ curl -sI https://onenova.in/blog/<slug>/
 
 ---
 
-## Option B — Second self-hosted runner (auto-deploy, safe for Tradebots)
+## Option B — Self-hosted runner (not needed)
 
-Install a **separate** runner directory so Tradebots is untouched.
+Auto-deploy is already handled by **Option C** (GitHub-hosted). A second self-hosted runner on the VM is only relevant if you want to avoid GitHub Actions minutes. If you ever go that route, install a **separate** runner directory so Tradebots is untouched.
 
 1. GitHub → **saurabhahuja71/onenova** → **Settings** → **Actions** → **Runners** → **New self-hosted runner**  
 2. Copy the registration token.  
@@ -188,9 +192,33 @@ so only the onenova runner picks up those jobs.
 
 ---
 
-## Option C — GitHub-hosted runner (no self-hosted for onenova)
+## Option C — GitHub-hosted runner (ACTIVE)
 
-Change `.github/workflows/deploy.yml` to `runs-on: ubuntu-latest` and add an SSH deploy step to `136.67.97.86` (deploy key or password in secrets). Build happens on GitHub; only static files land on the VM.
+This is the current setup. `.github/workflows/deploy.yml` runs on `ubuntu-latest`, builds the site, then deploys via SSH:
+
+```text
+push → ubuntu-latest → pnpm build:fast
+     → deploy/scripts/deploy-remote-github.sh
+         rsync dist/ → sauahuja@136.67.97.86:/var/www/onenova
+         sudo nginx -t && sudo systemctl reload nginx
+```
+
+Requirements (all already in place):
+
+1. **SSH deploy key** — private key stored as repo secret `ONENOVA_SSH_KEY`; the public key (`github-actions-onenova-deploy`) is in `~/.ssh/authorized_keys` on the VM.
+2. **Sudoers scope** — `/etc/sudoers.d/onenova-deploy` allows `sauahuja` to run `nginx -t` and `systemctl reload nginx` without a password.
+3. **Network** — the VM’s GCP firewall allows inbound SSH (port 22) from GitHub runner IPs.
+4. **rsync** — installed on GitHub-hosted `ubuntu-latest` images by default.
+
+Secrets:
+
+```bash
+gh secret set ONENOVA_SSH_KEY < onenova_deploy          # private key
+gh secret set ONENOVA_SSH_HOST -b 136.67.97.86
+gh secret set ONENOVA_SSH_USER -b sauahuja
+```
+
+Rotate / verify: `ssh-keygen -y -f <key>` to confirm the public half matches the one in `authorized_keys` on the VM.
 
 ---
 
@@ -272,8 +300,8 @@ sudo certbot renew --dry-run
 
 ## Recommendation
 
-- **Day to day:** Option A (manual `git pull` + build on VM) is enough.  
-- **Auto every push:** Option B (second runner for onenova only).  
+- **Day to day:** push to `main` — auto-deploy handles the rest (Option C).
+- **If Actions is down:** Option A (manual deploy) as fallback.
 - **Never** repoint the existing Tradebots runner at this repo unless you accept impact on that project.
 
 ---
@@ -282,6 +310,7 @@ sudo certbot renew --dry-run
 
 - `deploy/RUNNER.md` — runner safety rules  
 - `deploy/DNS.md` — DNS notes  
-- `deploy/scripts/deploy.sh` — rsync helper used by Actions  
+- `deploy/scripts/deploy-remote-github.sh` — Actions deploy (SSH rsync + nginx reload)  
+- `deploy/scripts/deploy.sh` — rsync helper (on-VM)  
 - `deploy/scripts/setup-vm-safe.sh` — non-destructive VM bootstrap  
 - `README.md` — full project overview  
