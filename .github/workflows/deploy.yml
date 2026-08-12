@@ -84,9 +84,17 @@ jobs:
           DIST_DIR: dist
         run: bash deploy/scripts/deploy-remote-github.sh
 
-      - name: Verify public site
+      - name: Verify site on origin
+        env:
+          ONENOVA_SSH_HOST: ${{ secrets.ONENOVA_SSH_HOST }}
         run: |
           sleep 2
-          code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 https://onenova.in/ || true)"
-          echo "https://onenova.in status: ${code}"
+          code="$(curl -skS -o /dev/null -w '%{http_code}' --max-time 15 --resolve onenova.in:443:"${ONENOVA_SSH_HOST}" https://onenova.in/ || true)"
+          echo "origin https://onenova.in status: ${code}"
           test "${code}" = "200"
+
+      - name: Verify site through Cloudflare (informational)
+        run: |
+          code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 https://onenova.in/ || true)"
+          echo "public https://onenova.in status: ${code} (Cloudflare may 403 datacenter IPs; not a failure)"
+          test "${code}" = "200" -o "${code}" = "403" -o "${code}" = "301" -o "${code}" = "302"
