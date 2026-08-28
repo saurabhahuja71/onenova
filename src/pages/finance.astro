@@ -1,0 +1,62 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+
+const chartUrl = '/orderflow/';
+---
+
+<BaseLayout
+  title="Finance"
+  description="Order-flow viewer — live charts and market data tools."
+>
+  <section class="section">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="Finance"
+        title="Market tools"
+        subtitle="Order-flow viewer — live NSE charts with Fyers market data."
+      />
+
+      <div class="mt-10">
+        <a
+          href={chartUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="card card-hover block"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">
+                Live terminal
+              </p>
+              <h2 class="mt-2 text-xl font-semibold text-slate-900 dark:text-white">
+                OrderFlow Viewer
+              </h2>
+              <p class="mt-2 max-w-xl text-sm text-slate-600 dark:text-slate-400">
+                Candlestick + volume charts, SMC overlays (CHoCH / FVG / BPR), timeframe
+                switching, and live WebSocket price updates powered by the Fyers API.
+              </p>
+            </div>
+            <span class="inline-flex items-center gap-2 rounded-full bg-brand-600 px-4 py-2 text-sm font-medium text-white">
+              Open chart
+              <span aria-hidden="true">↗</span>
+            </span>
+          </div>
+        </a>
+      </div>
+
+      <div class="mt-8">
+        <h2 class="text-2xl font-bold">Embedded viewer</h2>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          Live view below (same-origin). For the full experience, open it in its own tab.
+        </p>
+        <iframe
+          class="mt-6 h-[640px] w-full rounded-xl border border-slate-200 bg-[#11151c] dark:border-slate-800"
+          src={chartUrl}
+          title="OrderFlow Viewer chart"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </section>
+</BaseLayout>

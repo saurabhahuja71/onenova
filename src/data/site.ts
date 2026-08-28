@@ -42,6 +42,7 @@ export const siteConfig = {
     { label: 'Experience', href: '/experience' },
     { label: 'Skills', href: '/skills' },
     { label: 'Projects', href: '/projects' },
+    { label: 'Finance', href: '/finance' },
     { label: 'Learning', href: '/learning-path' },
     { label: 'Blog', href: '/blog' },
     { label: 'Resume', href: '/resume' },
