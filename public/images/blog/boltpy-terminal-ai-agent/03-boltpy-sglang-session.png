@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">Using Boltpy with local SGLang</title>
+  <desc id="desc">Terminal screenshot-style illustration showing Bolt connected to SGLang through its OpenAI-compatible v1 endpoint.</desc>
+  <rect width="1440" height="820" rx="22" fill="#172554"/>
+  <rect x="42" y="34" width="1356" height="752" rx="15" fill="#1e293b" stroke="#60a5fa" stroke-width="3"/>
+  <rect x="42" y="34" width="1356" height="52" rx="15" fill="#1e3a8a"/>
+  <circle cx="75" cy="60" r="8" fill="#f87171"/><circle cx="103" cy="60" r="8" fill="#fbbf24"/><circle cx="131" cy="60" r="8" fill="#4ade80"/>
+  <text x="720" y="67" text-anchor="middle" font-family="ui-monospace,monospace" font-size="20" fill="#dbeafe">SGLang OpenAI-compatible endpoint · Bolt</text>
+  <text x="70" y="140" font-family="ui-monospace,monospace" font-size="20" fill="#93c5fd">$ bolt --provider sglang --endpoint http://localhost:30000/v1 \</text>
+  <text x="92" y="178" font-family="ui-monospace,monospace" font-size="20" fill="#93c5fd">--model Qwen/Qwen3-Coder</text>
+  <text x="70" y="224" font-family="ui-monospace,monospace" font-size="19" fill="#86efac">✓ Provider reachable: sglang</text>
+  <line x1="70" y1="250" x2="1370" y2="250" stroke="#334155" stroke-width="2"/>
+  <text x="70" y="294" font-family="ui-monospace,monospace" font-size="20" fill="#f8fafc">› Plan a safe change to add retries around this HTTP client.</text>
+  <text x="70" y="340" font-family="ui-monospace,monospace" font-size="20" fill="#fbbf24">Mode: PLAN — tools are blocked until the plan is approved.</text>
+  <text x="70" y="390" font-family="ui-monospace,monospace" font-size="19" fill="#e2e8f0">1. Inspect the client and existing tests</text>
+  <text x="70" y="424" font-family="ui-monospace,monospace" font-size="19" fill="#e2e8f0">2. Propose bounded retry and timeout behavior</text>
+  <text x="70" y="458" font-family="ui-monospace,monospace" font-size="19" fill="#e2e8f0">3. Add tests, run them, and show the diff</text>
+  <rect x="70" y="520" width="1300" height="82" rx="10" fill="#172554" stroke="#60a5fa" stroke-width="3"/>
+  <text x="92" y="558" font-family="ui-monospace,monospace" font-size="19" fill="#bfdbfe">Type a prompt…</text>
+  <text x="70" y="656" font-family="ui-monospace,monospace" font-size="17" fill="#bfdbfe">Bolt | Mode: PLAN | Model: sglang/Qwen/Qwen3-Coder | Tokens: estimated</text>
+  <text x="70" y="710" font-family="ui-monospace,monospace" font-size="17" fill="#93c5fd">Use /mode ask or /mode allow when you are ready to execute.</text>
+</svg>

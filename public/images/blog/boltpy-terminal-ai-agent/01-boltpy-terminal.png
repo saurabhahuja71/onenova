@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">Bolt terminal AI coding agent interface</title>
+  <desc id="desc">A light terminal window showing Bolt with a workspace path, chat transcript, todo panel, status bar and prompt.</desc>
+  <rect width="1440" height="820" rx="22" fill="#e2e8f0"/>
+  <rect x="42" y="34" width="1356" height="752" rx="15" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+  <rect x="42" y="34" width="1356" height="52" rx="15" fill="#dbe4ee"/>
+  <circle cx="75" cy="60" r="8" fill="#ef4444"/><circle cx="103" cy="60" r="8" fill="#f59e0b"/><circle cx="131" cy="60" r="8" fill="#22c55e"/>
+  <text x="720" y="67" text-anchor="middle" font-family="ui-monospace,monospace" font-size="20" fill="#475569">bolt — terminal coding agent</text>
+  <text x="66" y="116" font-family="ui-monospace,monospace" font-size="18" fill="#64748b">CWD: /home/sauahuja/boltpy</text>
+  <line x1="66" y1="133" x2="1374" y2="133" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="70" y="175" font-family="ui-monospace,monospace" font-size="22" font-weight="700" fill="#0f172a">Bolt</text>
+  <text x="70" y="214" font-family="ui-monospace,monospace" font-size="20" fill="#334155">Ask questions, inspect files, and run safe coding tasks</text>
+  <text x="70" y="262" font-family="ui-monospace,monospace" font-size="20" fill="#475569">› Summarize this project and suggest a good first issue.</text>
+  <text x="70" y="308" font-family="ui-monospace,monospace" font-size="20" fill="#0f766e">● Reading README.md</text>
+  <text x="70" y="344" font-family="ui-monospace,monospace" font-size="20" fill="#16a34a">✓ Finished — 3 files inspected</text>
+  <text x="70" y="400" font-family="ui-monospace,monospace" font-size="20" fill="#334155">This is a Python terminal-native AI coding agent.</text>
+  <text x="70" y="434" font-family="ui-monospace,monospace" font-size="20" fill="#334155">I found the CLI, provider abstraction, and test suite.</text>
+  <rect x="1008" y="160" width="350" height="260" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="1030" y="198" font-family="ui-monospace,monospace" font-size="20" font-weight="700" fill="#0f172a">Todos</text>
+  <text x="1030" y="240" font-family="ui-monospace,monospace" font-size="18" fill="#16a34a">✓ Inspect project</text>
+  <text x="1030" y="276" font-family="ui-monospace,monospace" font-size="18" fill="#16a34a">✓ Read README</text>
+  <text x="1030" y="312" font-family="ui-monospace,monospace" font-size="18" fill="#2563eb">● Suggest first issue</text>
+  <text x="1030" y="366" font-family="ui-monospace,monospace" font-size="16" fill="#64748b">/model  /mode  /todo</text>
+  <rect x="66" y="510" width="1308" height="86" rx="10" fill="#ffffff" stroke="#22c55e" stroke-width="3"/>
+  <text x="88" y="548" font-family="ui-monospace,monospace" font-size="20" fill="#64748b">Type a prompt…</text>
+  <text x="88" y="576" font-family="ui-monospace,monospace" font-size="16" fill="#94a3b8">Enter send · Shift+Enter newline · Ctrl+C cancel</text>
+  <text x="70" y="640" font-family="ui-monospace,monospace" font-size="17" fill="#64748b">Bolt | Mode: ASK | Mouse: INTERACTIVE | Model: ollama/qwen3-coder</text>
+  <line x1="66" y1="670" x2="1374" y2="670" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="70" y="712" font-family="ui-monospace,monospace" font-size="16" fill="#64748b">Ctrl+Shift+S commands  ·  Ctrl+Shift+M mode  ·  Ctrl+Shift+T todos  ·  Ctrl+Q quit</text>
+</svg>
