@@ -77,7 +77,10 @@ import SectionHeading from '@components/SectionHeading.astro';
             <div class="flex flex-wrap gap-3">
               <button type="submit" class="btn-primary" id="rewrite-btn">✨ Create ATS-friendly version</button>
               <button type="button" class="btn-secondary" id="copy-btn">Copy</button>
-              <button type="button" class="btn-secondary" id="download-btn">Download .txt</button>
+              <button type="button" class="btn-secondary" id="download-txt-btn">TXT</button>
+              <button type="button" class="btn-secondary" id="download-docx-btn">DOCX</button>
+              <button type="button" class="btn-secondary" id="download-doc-btn">DOC</button>
+              <button type="button" class="btn-secondary" id="download-pdf-btn">PDF</button>
             </div>
             <pre id="rewrite-output" class="hidden max-h-[65vh] overflow-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-5 text-sm leading-7 text-slate-800 dark:bg-slate-950 dark:text-slate-200"></pre>
           </form>
@@ -96,6 +99,8 @@ import SectionHeading from '@components/SectionHeading.astro';
 <script>
   import * as pdfjsLib from 'pdfjs-dist';
   import * as mammoth from 'mammoth/mammoth.browser.js';
+  import { Document, HeadingLevel, Packer, Paragraph } from 'docx';
+  import { jsPDF } from 'jspdf';
 
   const atsForm = document.querySelector('#ats-form');
   const fileInput = document.querySelector('#resume-file');
@@ -239,13 +244,50 @@ import SectionHeading from '@components/SectionHeading.astro';
     }
   });
 
-  document.querySelector('#copy-btn')?.addEventListener('click', async () => navigator.clipboard.writeText(rewriteOutput.textContent || ''));
-  document.querySelector('#download-btn')?.addEventListener('click', () => {
-    const blob = new Blob([rewriteOutput.textContent || ''], { type: 'text/plain;charset=utf-8' });
+  const resumeText = () => rewriteOutput.textContent || '';
+  const downloadBlob = (blob, filename) => {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'ats-friendly-resume.txt';
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(link.href);
+  };
+  const fileStem = () => 'ats-friendly-resume';
+
+  document.querySelector('#copy-btn')?.addEventListener('click', async () => navigator.clipboard.writeText(resumeText()));
+  document.querySelector('#download-txt-btn')?.addEventListener('click', () => {
+    downloadBlob(new Blob([resumeText()], { type: 'text/plain;charset=utf-8' }), `${fileStem()}.txt`);
+  });
+  document.querySelector('#download-docx-btn')?.addEventListener('click', async () => {
+    const children = resumeText().split(/\n/).map((line) => {
+      const trimmed = line.trim();
+      const isHeading = /^(PROFESSIONAL SUMMARY|CORE SKILLS|PROFESSIONAL EXPERIENCE|EDUCATION)$/.test(trimmed);
+      return new Paragraph({ text: trimmed || ' ', heading: isHeading ? HeadingLevel.HEADING_2 : undefined, spacing: { after: 100 } });
+    });
+    downloadBlob(await Packer.toBlob(new Document({ sections: [{ properties: {}, children }] })), `${fileStem()}.docx`);
+  });
+  document.querySelector('#download-doc-btn')?.addEventListener('click', () => {
+    const escaped = resumeText().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const html = `<html><head><meta charset="utf-8"><title>ATS-friendly resume</title></head><body><pre style="font-family:Arial,sans-serif;white-space:pre-wrap">${escaped}</pre></body></html>`;
+    downloadBlob(new Blob([html], { type: 'application/msword' }), `${fileStem()}.doc`);
+  });
+  document.querySelector('#download-pdf-btn')?.addEventListener('click', () => {
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+    const margin = 48;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const lines = pdf.splitTextToSize(resumeText(), pageWidth - margin * 2);
+    let y = margin;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    for (const line of lines) {
+      if (y > pageHeight - margin) {
+        pdf.addPage();
+        y = margin;
+      }
+      pdf.text(line, margin, y);
+      y += 15;
+    }
+    pdf.save(`${fileStem()}.pdf`);
   });
 </script>
