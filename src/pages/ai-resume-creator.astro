@@ -130,12 +130,19 @@ Skills: ${data.skills}`;
     event.preventDefault();
     const data = readData();
     button.disabled = true;
-    setStatus('Preparing your private draft…');
+    setStatus('Creating your ATS-friendly resume with AI…');
     try {
-      let resume = localDraft(data);
+      const response = await fetch('/api/resume', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ mode: 'create', data }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'AI resume service is unavailable.');
+      const resume = result.text;
       output.textContent = resume;
       resultCard.classList.remove('hidden');
-      setStatus('Draft ready — add measurable outcomes before sending.');
+      setStatus('ATS-friendly resume created — review every claim before applying.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Could not generate the resume.', true);
     } finally {

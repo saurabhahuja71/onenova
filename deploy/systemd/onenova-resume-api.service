@@ -1,0 +1,15 @@
+[Unit]
+Description=OneNova secure resume AI API
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/onenova-api
+ExecStart=%h/.nvm/versions/node/v20.20.2/bin/node %h/onenova-api/resume-api.mjs
+EnvironmentFile=%h/.config/onenova-resume-api.env
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

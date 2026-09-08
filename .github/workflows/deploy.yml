@@ -9,6 +9,7 @@
 #   ONENOVA_SSH_HOST     VM address (default 136.67.97.86)
 #   ONENOVA_SSH_USER     SSH user (default sauahuja)
 #   ONENOVA_SSH_KEY      private ed25519 key authorized on the VM
+#   OPENAI_API_KEY       server-only key for the resume API (never bundled into dist/)
 # Optional:
 #   PERSONAL_GITHUB_TOKEN    higher GitHub API limits for stats/projects
 #   PUBLIC_FORMSPREE_ID      contact form backend id
@@ -82,6 +83,7 @@ jobs:
           ONENOVA_SSH_USER: ${{ secrets.ONENOVA_SSH_USER }}
           ONENOVA_SSH_KEY_FILE: /tmp/onenova_deploy_key
           DIST_DIR: dist
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: bash deploy/scripts/deploy-remote-github.sh
 
       - name: Verify site on origin

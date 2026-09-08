@@ -235,7 +235,14 @@ import SectionHeading from '@components/SectionHeading.astro';
     rewriteOutput.classList.remove('hidden');
     rewriteOutput.textContent = 'Preparing ATS-friendly version…';
     try {
-      let rewritten = localRewrite(extractedResume);
+      const response = await fetch('/api/resume', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ mode: 'rewrite', text: extractedResume, targetRole: data.targetRole }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'AI resume service is unavailable.');
+      const rewritten = result.text;
       rewriteOutput.textContent = rewritten;
     } catch (error) {
       rewriteOutput.textContent = error instanceof Error ? error.message : 'Could not create the ATS-friendly version.';
