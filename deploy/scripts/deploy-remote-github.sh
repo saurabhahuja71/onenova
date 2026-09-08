@@ -49,7 +49,7 @@ ssh "${SSH_OPTS[@]}" "${USER}@${HOST}" \
 
 # Stream the secret over SSH without placing it in the repository, command line,
 # or job output. The service reads this mode-600 file on the VM only.
-printf '%s\n' "${OPENAI_API_KEY}" | ssh "${SSH_OPTS[@]}" "${USER}@${HOST}" \
+printf 'OPENAI_API_KEY=%s\n' "${OPENAI_API_KEY}" | ssh "${SSH_OPTS[@]}" "${USER}@${HOST}" \
   "umask 077 && cat > ~/.config/onenova-resume-api.env"
 
 ssh "${SSH_OPTS[@]}" "${USER}@${HOST}" \
