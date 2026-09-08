@@ -53,7 +53,7 @@ printf '%s\n' "${OPENAI_API_KEY}" | ssh "${SSH_OPTS[@]}" "${USER}@${HOST}" \
   "umask 077 && cat > ~/.config/onenova-resume-api.env"
 
 ssh "${SSH_OPTS[@]}" "${USER}@${HOST}" \
-  "systemctl --user daemon-reload && systemctl --user enable --now onenova-resume-api.service && sudo install -m 644 /tmp/onenova.in.conf /etc/nginx/conf.d/onenova.in.conf && sudo nginx -t && sudo systemctl reload nginx"
+  "sudo loginctl enable-linger ${USER} && systemctl --user daemon-reload && systemctl --user enable --now onenova-resume-api.service && sudo install -m 644 /tmp/onenova.in.conf /etc/nginx/conf.d/onenova.in.conf && sudo nginx -t && sudo systemctl reload nginx"
 
 for attempt in {1..20}; do
   if ssh "${SSH_OPTS[@]}" "${USER}@${HOST}" "curl -fsS http://127.0.0.1:8787/api/health" >/dev/null; then
