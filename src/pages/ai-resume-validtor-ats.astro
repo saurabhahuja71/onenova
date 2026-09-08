@@ -131,9 +131,9 @@ import SectionHeading from '@components/SectionHeading.astro';
   let originalResume: Record<string, unknown> | null = null;
   let currentResume: Record<string, unknown> | null = null;
 
-  const loadOptionalDependency = async (specifier: string, label: string) => {
+  const loadOptionalDependency = async (loader: () => Promise<any>, label: string) => {
     try {
-      return await import(specifier);
+      return await loader();
     } catch {
       throw new Error(`${label} support is unavailable right now. You can still use TXT resumes.`);
     }
@@ -150,7 +150,7 @@ import SectionHeading from '@components/SectionHeading.astro';
   };
 
   async function extractPdf(buffer) {
-    const pdfjsLib = await loadOptionalDependency('pdfjs-dist', 'PDF');
+    const pdfjsLib = await loadOptionalDependency(() => import('pdfjs-dist'), 'PDF');
     const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer), disableWorker: true }).promise;
     const pages = [];
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
@@ -162,7 +162,7 @@ import SectionHeading from '@components/SectionHeading.astro';
   }
 
   async function extractDocx(buffer) {
-    const mammoth = await loadOptionalDependency('mammoth/mammoth.browser.js', 'DOCX');
+    const mammoth = await loadOptionalDependency(() => import('mammoth/mammoth.browser.js'), 'DOCX');
     const result = await mammoth.convertToHtml({ arrayBuffer: buffer });
     return { text: docxHtmlToText(result.value), warnings: (result.messages || []).map((message: { message?: string }) => message.message).filter(Boolean) };
   }
@@ -268,7 +268,7 @@ import SectionHeading from '@components/SectionHeading.astro';
   document.querySelector('#download-docx-btn')?.addEventListener('click', async () => {
     if (!currentResume) return;
     try {
-      const { Document, HeadingLevel, Packer, Paragraph } = await loadOptionalDependency('docx', 'DOCX');
+      const { Document, HeadingLevel, Packer, Paragraph } = await loadOptionalDependency(() => import('docx'), 'DOCX');
       downloadBlob(await Packer.toBlob(generateResumeDocx(currentResume, { Document, HeadingLevel, Paragraph })), `${fileStem()}.docx`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'DOCX generation is unavailable right now.', true);
@@ -281,7 +281,7 @@ import SectionHeading from '@components/SectionHeading.astro';
   });
   document.querySelector('#download-pdf-btn')?.addEventListener('click', () => {
     if (!currentResume) return;
-    loadOptionalDependency('jspdf', 'PDF').then(({ jsPDF }) => {
+    loadOptionalDependency(() => import('jspdf'), 'PDF').then(({ jsPDF }) => {
       generateResumePdf(currentResume, jsPDF).save(`${fileStem()}.pdf`);
     }).catch((error) => {
       setStatus(error instanceof Error ? error.message : 'PDF generation is unavailable right now.', true);
