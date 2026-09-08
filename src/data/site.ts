@@ -43,6 +43,7 @@ export const siteConfig = {
     { label: 'Skills', href: '/skills' },
     { label: 'Projects', href: '/projects' },
     { label: 'Learning', href: '/learning-path' },
+    { label: 'AI Resume', href: '/ai-resume-creator' },
     { label: 'Blog', href: '/blog' },
     { label: 'Resume', href: '/resume' },
     { label: 'Contact', href: '/contact' },
