@@ -38,15 +38,9 @@ import SectionHeading from '@components/SectionHeading.astro';
             <label class="block text-sm font-medium">Skills<textarea required name="skills" class="form-input min-h-28" placeholder="Python, SQL, Kubernetes, stakeholder management"></textarea></label>
           </div>
 
-          <details class="rounded-xl border border-slate-200 p-4 dark:border-slate-700">
-            <summary class="cursor-pointer text-sm font-semibold">Optional AI enhancement</summary>
-            <div class="mt-4 space-y-3">
-              <label class="block text-sm font-medium">OpenAI API key <input name="apiKey" type="password" class="form-input" autocomplete="off" placeholder="sk-..." /></label>
-              <p class="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Your key is used only in this browser tab for this request. It is not saved by OneNova. Leave it blank for a local structured draft.
-              </p>
-            </div>
-          </details>
+          <p class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs leading-relaxed text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
+            This static site currently creates a private local draft. AI rewriting will be enabled after a secure server-side proxy is configured; no API key is requested or stored here.
+          </p>
 
           <div class="flex flex-wrap items-center gap-3">
             <button class="btn-primary" type="submit" id="generate-btn">✨ Generate resume</button>
@@ -128,23 +122,12 @@ Skills: ${data.skills}`;
     event.preventDefault();
     const data = readData();
     button.disabled = true;
-    setStatus(data.apiKey ? 'Generating with OpenAI…' : 'Preparing your draft…');
+    setStatus('Preparing your private draft…');
     try {
       let resume = localDraft(data);
-      if (data.apiKey) {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.apiKey}` },
-          body: JSON.stringify({ model: 'gpt-4o-mini', temperature: 0.3, messages: [{ role: 'user', content: promptFor(data) }] }),
-        });
-        if (!response.ok) throw new Error(`OpenAI request failed (${response.status})`);
-        const json = await response.json();
-        resume = json.choices?.[0]?.message?.content?.trim();
-        if (!resume) throw new Error('The model returned an empty response');
-      }
       output.textContent = resume;
       resultCard.classList.remove('hidden');
-      setStatus(data.apiKey ? 'Generated — review every claim.' : 'Draft ready — add measurable outcomes before sending.');
+      setStatus('Draft ready — add measurable outcomes before sending.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Could not generate the resume.', true);
     } finally {

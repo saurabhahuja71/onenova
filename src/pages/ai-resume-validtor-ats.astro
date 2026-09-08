@@ -1,0 +1,251 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+---
+
+<BaseLayout
+  title="AI Resume Validator & ATS Checker"
+  description="Upload a PDF or DOCX resume, check common ATS requirements, and create a cleaner ATS-friendly version."
+>
+  <section class="section pb-10">
+    <div class="container-page">
+      <SectionHeading
+        eyebrow="OneNova tool"
+        title="AI Resume Validator & ATS Checker"
+        subtitle="Upload a PDF or DOCX, see what may block parsing, and generate a cleaner resume in the same format as the AI Resume Creator."
+      />
+
+      <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+        <div class="space-y-6">
+          <form id="ats-form" class="card space-y-6">
+            <div>
+              <h2 class="text-lg font-semibold">Upload your resume</h2>
+              <p class="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                Files are read in your browser and are not uploaded to OneNova. PDF and DOCX files up to 10 MB are supported.
+              </p>
+            </div>
+            <label class="flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-5 text-center transition hover:border-brand-500 dark:border-slate-700 dark:bg-slate-950">
+              <span class="text-3xl" aria-hidden="true">📄</span>
+              <span class="mt-2 text-sm font-semibold">Choose PDF or DOCX</span>
+              <span id="file-name" class="mt-1 text-xs text-slate-500">No file selected</span>
+              <input id="resume-file" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="sr-only" required />
+            </label>
+            <button type="submit" class="btn-primary w-full" id="validate-btn">🔎 Validate resume</button>
+            <p id="status" class="text-sm text-slate-500" role="status" aria-live="polite"></p>
+          </form>
+
+          <div class="card">
+            <p class="text-sm font-semibold">What this checks</p>
+            <ul class="mt-3 space-y-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              <li>✓ Standard resume sections and contact details</li>
+              <li>✓ Searchable text, length, bullets, and action language</li>
+              <li>✓ Common parser risks such as dense blocks and missing headings</li>
+              <li>✓ A clear list of improvements before you apply</li>
+            </ul>
+            <p class="mt-4 text-xs leading-relaxed text-slate-500">
+              This is a practical heuristic, not a guarantee for every employer’s ATS. Visual layout issues in a PDF may require a human review.
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div id="report-card" class="card hidden">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">Validation report</p>
+                <h2 id="report-title" class="mt-1 text-2xl font-bold">ATS readiness</h2>
+              </div>
+              <div id="score" class="rounded-2xl bg-emerald-500/15 px-5 py-3 text-center text-3xl font-bold text-emerald-600 dark:text-emerald-400">—</div>
+            </div>
+            <div class="mt-5 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"><div id="score-bar" class="h-full rounded-full bg-emerald-500 transition-all" style="width: 0%"></div></div>
+            <div id="metrics" class="mt-6 grid gap-3 sm:grid-cols-3"></div>
+            <div class="mt-6">
+              <h3 class="font-semibold">Recommended improvements</h3>
+              <ul id="issues" class="mt-3 space-y-3 text-sm leading-relaxed"></ul>
+            </div>
+          </div>
+
+          <form id="rewrite-form" class="card hidden space-y-5">
+            <div>
+              <h2 class="text-lg font-semibold">Make it ATS-friendly</h2>
+              <p class="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                Add an optional target role and use the same four-part format as the Resume Creator: summary, skills, experience, and education.
+              </p>
+            </div>
+            <label class="block text-sm font-medium">Target role <input name="targetRole" class="form-input" placeholder="e.g. Senior Data Scientist" /></label>
+            <p class="text-xs leading-relaxed text-slate-500">This static site produces a normalized plain-text version locally without inventing content. AI rewriting will be enabled after a secure server-side proxy is configured; no API key is requested or stored here.</p>
+            <div class="flex flex-wrap gap-3">
+              <button type="submit" class="btn-primary" id="rewrite-btn">✨ Create ATS-friendly version</button>
+              <button type="button" class="btn-secondary" id="copy-btn">Copy</button>
+              <button type="button" class="btn-secondary" id="download-btn">Download .txt</button>
+            </div>
+            <pre id="rewrite-output" class="hidden max-h-[65vh] overflow-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-5 text-sm leading-7 text-slate-800 dark:bg-slate-950 dark:text-slate-200"></pre>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .form-input {
+    @apply mt-2 block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-normal text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white;
+  }
+</style>
+
+<script>
+  import * as pdfjsLib from 'pdfjs-dist';
+  import * as mammoth from 'mammoth/mammoth.browser.js';
+
+  const atsForm = document.querySelector('#ats-form');
+  const fileInput = document.querySelector('#resume-file');
+  const fileName = document.querySelector('#file-name');
+  const validateButton = document.querySelector('#validate-btn');
+  const status = document.querySelector('#status');
+  const reportCard = document.querySelector('#report-card');
+  const score = document.querySelector('#score');
+  const scoreBar = document.querySelector('#score-bar');
+  const metrics = document.querySelector('#metrics');
+  const issues = document.querySelector('#issues');
+  const rewriteForm = document.querySelector('#rewrite-form');
+  const rewriteButton = document.querySelector('#rewrite-btn');
+  const rewriteOutput = document.querySelector('#rewrite-output');
+  let extractedResume = '';
+  let currentReport = null;
+
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    fileName.textContent = file ? `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB` : 'No file selected';
+  });
+
+  const setStatus = (message, error = false) => {
+    status.textContent = message;
+    status.className = `text-sm ${error ? 'text-red-600 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'}`;
+  };
+
+  const cleanText = (value) => value.replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+
+  async function extractPdf(buffer) {
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer), disableWorker: true }).promise;
+    const pages = [];
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+      pages.push(content.items.map((item) => ('str' in item ? item.str : '')).join(' '));
+    }
+    return pages.join('\n\n');
+  }
+
+  async function extractDocx(buffer) {
+    const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+    return result.value;
+  }
+
+  const hasSection = (text, names) => names.some((name) => new RegExp(`(^|\\n)\\s*${name}\\s*($|\\n|:)`, 'im').test(text));
+
+  function validate(text) {
+    const normalized = cleanText(text);
+    const lower = normalized.toLowerCase();
+    const lines = normalized.split('\n').map((line) => line.trim()).filter(Boolean);
+    const words = normalized.split(/\s+/).filter(Boolean).length;
+    const bulletCount = lines.filter((line) => /^([•●▪◦*-]|\d+[.)])\s+/.test(line)).length;
+    const sections = {
+      summary: hasSection(normalized, ['professional summary', 'summary', 'objective', 'profile']),
+      skills: hasSection(normalized, ['core skills', 'skills', 'technical skills', 'competencies']),
+      experience: hasSection(normalized, ['professional experience', 'work experience', 'experience', 'employment']),
+      education: hasSection(normalized, ['education', 'academic background']),
+    };
+    const contact = {
+      email: /[\w.+-]+@[\w-]+\.[\w.-]+/.test(normalized),
+      phone: /(?:\+?\d[\d ()-]{7,}\d)/.test(normalized),
+      linkedin: /linkedin\.com\//i.test(normalized),
+    };
+    const actionWords = (lower.match(/\b(led|built|designed|developed|improved|delivered|managed|created|automated|reduced|increased|launched|implemented)\b/g) || []).length;
+    const longLines = lines.filter((line) => line.length > 180).length;
+    let points = 0;
+    points += contact.email ? 8 : 0;
+    points += contact.phone ? 5 : 0;
+    points += contact.linkedin ? 2 : 0;
+    points += Object.values(sections).filter(Boolean).length * 8;
+    points += Math.min(15, bulletCount * 2);
+    points += words >= 180 && words <= 1200 ? 10 : words >= 80 ? 5 : 0;
+    points += Math.min(10, actionWords * 2);
+    points -= Math.min(10, longLines * 2);
+    const finalScore = Math.max(0, Math.min(100, points));
+    const findings = [];
+    if (!contact.email) findings.push('Add a plain-text email address near your name so recruiters and parsers can identify you.');
+    if (!contact.phone) findings.push('Add a phone number using ordinary digits and spaces; avoid putting it only in an image or header graphic.');
+    if (!contact.linkedin) findings.push('Consider adding a LinkedIn URL as plain text if it is relevant to your application.');
+    if (!sections.summary) findings.push('Add a “PROFESSIONAL SUMMARY” section with a concise role-focused introduction.');
+    if (!sections.skills) findings.push('Add a clearly labelled “CORE SKILLS” or “SKILLS” section using searchable keywords.');
+    if (!sections.experience) findings.push('Use a standard “PROFESSIONAL EXPERIENCE” or “WORK EXPERIENCE” heading.');
+    if (!sections.education) findings.push('Use a standard “EDUCATION” heading and list each degree, institution, and date.');
+    if (bulletCount < 3) findings.push('Convert responsibilities into short bullets with strong action verbs and measurable outcomes where truthful.');
+    if (longLines > 0) findings.push('Break long paragraphs into shorter bullets; dense lines are harder to scan and may parse poorly.');
+    if (words < 180) findings.push('The extracted resume is very short. Add relevant achievements, tools, scope, and outcomes.');
+    if (findings.length === 0) findings.push('No major heuristic issues found. Still review the visual PDF/DOCX layout and tailor keywords to each job description.');
+    return { text: normalized, words, bulletCount, sections, contact, finalScore, findings };
+  }
+
+  function renderReport(report) {
+    const good = report.finalScore >= 80;
+    score.textContent = `${report.finalScore}/100`;
+    score.className = `rounded-2xl px-5 py-3 text-center text-3xl font-bold ${good ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'}`;
+    scoreBar.style.width = `${report.finalScore}%`;
+    scoreBar.className = `h-full rounded-full transition-all ${good ? 'bg-emerald-500' : 'bg-amber-500'}`;
+    metrics.innerHTML = [['Sections', `${Object.values(report.sections).filter(Boolean).length}/4`], ['Words', report.words], ['Bullets', report.bulletCount]].map(([label, value]) => `<div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-950"><p class="text-xs text-slate-500">${label}</p><p class="mt-1 text-xl font-bold">${value}</p></div>`).join('');
+    issues.innerHTML = report.findings.map((finding) => `<li class="flex gap-3"><span class="mt-2 h-2 w-2 shrink-0 rounded-full ${good ? 'bg-emerald-500' : 'bg-amber-500'}"></span><span>${finding}</span></li>`).join('');
+    reportCard.classList.remove('hidden');
+    rewriteForm.classList.remove('hidden');
+  }
+
+  atsForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const file = fileInput.files?.[0];
+    if (!file) return setStatus('Choose a PDF or DOCX file first.', true);
+    if (file.size > 10 * 1024 * 1024) return setStatus('Please choose a file smaller than 10 MB.', true);
+    validateButton.disabled = true;
+    setStatus('Reading your resume locally…');
+    try {
+      const buffer = await file.arrayBuffer();
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      extractedResume = cleanText(isPdf ? await extractPdf(buffer) : await extractDocx(buffer));
+      if (!extractedResume) throw new Error('No readable text was found. Try exporting the document again or use a text-based PDF.');
+      currentReport = validate(extractedResume);
+      renderReport(currentReport);
+      setStatus('Validation complete. Your file stayed in this browser.');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Could not read this file.', true);
+    } finally {
+      validateButton.disabled = false;
+    }
+  });
+
+  const localRewrite = (text) => text.replace(/[|•●▪◦]/g, '\n- ').replace(/\n{3,}/g, '\n\n').trim();
+
+  rewriteForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(rewriteForm).entries());
+    rewriteButton.disabled = true;
+    rewriteOutput.classList.remove('hidden');
+    rewriteOutput.textContent = 'Preparing ATS-friendly version…';
+    try {
+      let rewritten = localRewrite(extractedResume);
+      rewriteOutput.textContent = rewritten;
+    } catch (error) {
+      rewriteOutput.textContent = error instanceof Error ? error.message : 'Could not create the ATS-friendly version.';
+    } finally {
+      rewriteButton.disabled = false;
+    }
+  });
+
+  document.querySelector('#copy-btn')?.addEventListener('click', async () => navigator.clipboard.writeText(rewriteOutput.textContent || ''));
+  document.querySelector('#download-btn')?.addEventListener('click', () => {
+    const blob = new Blob([rewriteOutput.textContent || ''], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'ats-friendly-resume.txt';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+</script>

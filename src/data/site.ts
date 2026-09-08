@@ -44,6 +44,7 @@ export const siteConfig = {
     { label: 'Projects', href: '/projects' },
     { label: 'Learning', href: '/learning-path' },
     { label: 'AI Resume', href: '/ai-resume-creator' },
+    { label: 'ATS Validator', href: '/ai-resume-validtor-ats' },
     { label: 'Blog', href: '/blog' },
     { label: 'Resume', href: '/resume' },
     { label: 'Contact', href: '/contact' },
