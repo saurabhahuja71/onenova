@@ -1,0 +1,16 @@
+Alex Morgan
+alex@example.com | +1 555 123 4567 | https://linkedin.com/in/alexmorgan
+
+pRoFeSsIoNaL sUmMaRy
+Platform engineer with reliable systems experience.
+
+technical skills
+Kubernetes, JavaScript
+
+employment
+- Built deployment tooling that reduced release effort
+  across production environments.
+- Improved service reliability.
+
+academic background:
+BEng, Example University, 2020

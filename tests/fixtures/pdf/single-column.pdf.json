@@ -1,0 +1,13 @@
+{
+  "pages": [
+    {
+      "items": [
+        { "str": "Alex Morgan", "transform": [1, 0, 0, 1, 48, 760] },
+        { "str": "alex@example.com", "transform": [1, 0, 0, 1, 48, 742] },
+        { "str": "PROFESSIONAL SUMMARY", "transform": [1, 0, 0, 1, 48, 700] },
+        { "str": "Platform engineer", "transform": [1, 0, 0, 1, 48, 682] },
+        { "str": "with reliable systems.", "transform": [1, 0, 0, 1, 48, 664] }
+      ]
+    }
+  ]
+}

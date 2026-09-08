@@ -1,0 +1,12 @@
+{
+  "pages": [
+    {
+      "items": [
+        { "str": "SUMMARY", "transform": [1, 0, 0, 1, 48, 760] },
+        { "str": "SKILLS", "transform": [1, 0, 0, 1, 360, 760] },
+        { "str": "Platform engineer", "transform": [1, 0, 0, 1, 48, 742] },
+        { "str": "Kubernetes", "transform": [1, 0, 0, 1, 360, 742] }
+      ]
+    }
+  ]
+}

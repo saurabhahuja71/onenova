@@ -1,0 +1,18 @@
+{
+  "pages": [
+    {
+      "items": [
+        { "str": "Alex Morgan | Resume", "transform": [1, 0, 0, 1, 48, 760] },
+        { "str": "Page one content", "transform": [1, 0, 0, 1, 48, 700] },
+        { "str": "Page footer", "transform": [1, 0, 0, 1, 48, 40] }
+      ]
+    },
+    {
+      "items": [
+        { "str": "Alex Morgan | Resume", "transform": [1, 0, 0, 1, 48, 760] },
+        { "str": "Page two content", "transform": [1, 0, 0, 1, 48, 700] },
+        { "str": "Page footer", "transform": [1, 0, 0, 1, 48, 40] }
+      ]
+    }
+  ]
+}
