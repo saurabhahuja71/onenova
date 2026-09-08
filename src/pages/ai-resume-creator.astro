@@ -29,7 +29,7 @@ import SectionHeading from '@components/SectionHeading.astro';
             <label class="block text-sm font-medium">Email <input required type="email" name="email" class="form-input" autocomplete="email" placeholder="you@example.com" /></label>
             <label class="block text-sm font-medium">Phone <input name="phone" class="form-input" autocomplete="tel" placeholder="Optional" /></label>
             <label class="block text-sm font-medium">LinkedIn <input name="linkedin" class="form-input" placeholder="Optional profile URL" /></label>
-            <label class="block text-sm font-medium sm:col-span-2">Target role <input name="targetRole" class="form-input" placeholder="e.g. Senior Data Scientist" /></label>
+            <label class="block text-sm font-medium sm:col-span-2">Personal website or blog <input name="website" class="form-input" placeholder="Optional URL" /></label>
           </div>
 
           <div class="space-y-5">
@@ -57,7 +57,7 @@ import SectionHeading from '@components/SectionHeading.astro';
               <li>✓ Professional summary tailored to your target role</li>
               <li>✓ Concise, impact-focused experience bullets</li>
               <li>✓ Skills and education in ATS-friendly plain text</li>
-              <li>✓ Copy or download the result as a .txt file</li>
+              <li>✓ Copy or download the result as TXT, DOCX, or PDF</li>
             </ul>
           </div>
           <div class="card">
@@ -71,7 +71,9 @@ import SectionHeading from '@components/SectionHeading.astro';
               <h2 class="font-semibold">Your resume</h2>
               <div class="flex gap-2">
                 <button type="button" id="copy-btn" class="btn-ghost px-3 py-1.5 text-xs">Copy</button>
-                <button type="button" id="download-btn" class="btn-ghost px-3 py-1.5 text-xs">Download</button>
+                <button type="button" id="download-txt-btn" class="btn-ghost px-3 py-1.5 text-xs">TXT</button>
+                <button type="button" id="download-docx-btn" class="btn-ghost px-3 py-1.5 text-xs">DOCX</button>
+                <button type="button" id="download-pdf-btn" class="btn-ghost px-3 py-1.5 text-xs">PDF</button>
               </div>
             </div>
             <pre id="resume-output" class="mt-5 max-h-[65vh] overflow-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-5 text-sm leading-7 text-slate-800 dark:bg-slate-950 dark:text-slate-200"></pre>
@@ -88,14 +90,20 @@ import SectionHeading from '@components/SectionHeading.astro';
   }
 </style>
 
-<script is:inline>
+<script>
+  // @ts-nocheck
+  import { Document, HeadingLevel, Packer, Paragraph } from 'docx';
+  import { jsPDF } from 'jspdf';
+
   const form = document.querySelector('#resume-creator-form');
   const button = document.querySelector('#generate-btn');
   const status = document.querySelector('#status');
   const resultCard = document.querySelector('#result-card');
   const output = document.querySelector('#resume-output');
   const copyButton = document.querySelector('#copy-btn');
-  const downloadButton = document.querySelector('#download-btn');
+  const downloadTxtButton = document.querySelector('#download-txt-btn');
+  const downloadDocxButton = document.querySelector('#download-docx-btn');
+  const downloadPdfButton = document.querySelector('#download-pdf-btn');
 
   const promptFor = (data) => `You are a senior professional resume writer and career coach. Create a polished, professional, ATS-friendly resume for ${data.targetRole || 'the candidate'}.
 
@@ -110,7 +118,7 @@ Education: ${data.education}
 Experience: ${data.experience}
 Skills: ${data.skills}`;
 
-  const localDraft = (data) => `${data.name.toUpperCase()}\n${data.email}${data.phone ? ` · ${data.phone}` : ''}${data.linkedin ? ` · ${data.linkedin}` : ''}\n\nPROFESSIONAL SUMMARY\n${data.targetRole ? `${data.targetRole} professional` : 'Professional'} with experience across the areas described below. Review and refine this summary with your specific strengths and measurable outcomes.\n\nCORE SKILLS\n${data.skills.split(/[,\n]/).map((skill) => skill.trim()).filter(Boolean).map((skill) => `• ${skill}`).join('\n')}\n\nPROFESSIONAL EXPERIENCE\n${data.experience}\n\nEDUCATION\n${data.education}`;
+  const localDraft = (data) => `${data.name.toUpperCase()}\n${data.email}${data.phone ? ` · ${data.phone}` : ''}${data.linkedin ? ` · ${data.linkedin}` : ''}${data.website ? ` · ${data.website}` : ''}\n\nPROFESSIONAL SUMMARY\nProfessional with experience across the areas described below. Review and refine this summary with your specific strengths and measurable outcomes.\n\nCORE SKILLS\n${data.skills.split(/[,\n]/).map((skill) => skill.trim()).filter(Boolean).map((skill) => `• ${skill}`).join('\n')}\n\nPROFESSIONAL EXPERIENCE\n${data.experience}\n\nEDUCATION\n${data.education}`;
 
   const readData = () => Object.fromEntries(new FormData(form).entries());
   const setStatus = (message, error = false) => {
@@ -140,13 +148,47 @@ Skills: ${data.skills}`;
     setStatus('Copied to clipboard.');
   });
 
-  downloadButton?.addEventListener('click', () => {
-    const name = readData().name || 'resume';
-    const blob = new Blob([output.textContent || ''], { type: 'text/plain;charset=utf-8' });
+  const downloadBlob = (blob, filename) => {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'resume'}-resume.txt`;
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(link.href);
+  };
+
+  const safeFilename = () => `${(readData().name || 'resume').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'resume'}-resume`;
+  const resumeText = () => output.textContent || '';
+
+  downloadTxtButton?.addEventListener('click', () => {
+    downloadBlob(new Blob([resumeText()], { type: 'text/plain;charset=utf-8' }), `${safeFilename()}.txt`);
+  });
+
+  downloadDocxButton?.addEventListener('click', async () => {
+    const children = resumeText().split(/\n/).map((line) => {
+      const trimmed = line.trim();
+      const isHeading = /^(PROFESSIONAL SUMMARY|CORE SKILLS|PROFESSIONAL EXPERIENCE|EDUCATION)$/.test(trimmed);
+      return new Paragraph({ text: trimmed || ' ', heading: isHeading ? HeadingLevel.HEADING_2 : undefined, spacing: { after: 100 } });
+    });
+    downloadBlob(await Packer.toBlob(new Document({ sections: [{ properties: {}, children }] })), `${safeFilename()}.docx`);
+  });
+
+  downloadPdfButton?.addEventListener('click', () => {
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+    const margin = 48;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const lines = pdf.splitTextToSize(resumeText(), pageWidth - margin * 2);
+    let y = margin;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    for (const line of lines) {
+      if (y > pageHeight - margin) {
+        pdf.addPage();
+        y = margin;
+      }
+      pdf.text(line, margin, y);
+      y += 15;
+    }
+    pdf.save(`${safeFilename()}.pdf`);
   });
 </script>
