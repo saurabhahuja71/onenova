@@ -104,6 +104,241 @@ The repository’s CI/CD examples focus on approachable GitHub Actions and repos
 
 This sequence prevents a common beginner mistake: automating a deployment process before proving that the application can be built and tested consistently.
 
+## One sample project: Hello Cloud
+
+To make the progression concrete, build the same tiny application at every stage. Call it **Hello Cloud**: a Go HTTP service that returns a greeting, identifies its version, and exposes a health endpoint.
+
+The application is intentionally small. The learning comes from moving it through the lifecycle, not from adding business features.
+
+### 1. Write the smallest useful service
+
+Create a directory and initialize a Go module:
+
+```bash
+mkdir hello-cloud
+cd hello-cloud
+go mod init example.com/hello-cloud
+```
+
+Create `main.go`:
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+)
+
+type response struct {
+	Message string `json:"message"`
+	Version string `json:"version"`
+}
+
+func main() {
+	version := os.Getenv("APP_VERSION")
+	if version == "" {
+		version = "dev"
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response{
+			Message: "hello from the cloud-native learning path",
+			Version: version,
+		})
+	})
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok\n"))
+	})
+
+	server := &http.Server{Addr: ":8080", Handler: mux}
+	log.Printf("hello-cloud listening on %s", server.Addr)
+	log.Fatal(server.ListenAndServe())
+}
+```
+
+Run and test it locally:
+
+```bash
+go run .
+# In another terminal:
+curl -i http://localhost:8080/
+curl -i http://localhost:8080/healthz
+```
+
+The root endpoint should return JSON similar to:
+
+```json
+{"message":"hello from the cloud-native learning path","version":"dev"}
+```
+
+At this point, the important lessons are the process lifecycle, the listening port, an environment-based configuration value, and a health endpoint. Add a small table-driven test for the handler before continuing. A project that cannot be tested locally is not ready to be automated.
+
+### 2. Package it as a container
+
+Add a multi-stage `Dockerfile`:
+
+```dockerfile
+FROM golang:1.24 AS build
+WORKDIR /src
+COPY go.mod ./
+COPY main.go ./
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /hello-cloud .
+
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=build /hello-cloud /hello-cloud
+EXPOSE 8080
+USER nonroot:nonroot
+ENTRYPOINT ["/hello-cloud"]
+```
+
+Build and run it:
+
+```bash
+docker build -t hello-cloud:dev .
+docker run --rm --name hello-cloud \
+  -p 8080:8080 \
+  -e APP_VERSION=container \
+  hello-cloud:dev
+```
+
+Then call the same endpoints again. The response should now report `"version":"container"`. This is a useful checkpoint: the application behavior has stayed constant while the runtime boundary changed.
+
+The multi-stage build keeps the Go toolchain out of the final image. The non-root user reduces the impact of a process compromise, and the health endpoint gives an orchestrator a cheap way to check that the server is responding. For a real service, also pin base-image digests and scan the resulting image.
+
+### 3. Run the container on Kubernetes
+
+Create `k8s.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-cloud
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello-cloud
+  template:
+    metadata:
+      labels:
+        app: hello-cloud
+    spec:
+      containers:
+        - name: hello-cloud
+          image: hello-cloud:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: APP_VERSION
+              value: kubernetes
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-cloud
+spec:
+  selector:
+    app: hello-cloud
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  type: ClusterIP
+```
+
+Apply it to a local cluster such as [kind](https://kind.sigs.k8s.io/), Minikube, or Docker Desktop Kubernetes. With kind, load the locally built image first:
+
+```bash
+kind create cluster --name learning-path
+kind load docker-image hello-cloud:dev --name learning-path
+kubectl apply -f k8s.yaml
+kubectl rollout status deployment/hello-cloud
+kubectl get pods,service hello-cloud
+kubectl port-forward service/hello-cloud 8080:80
+```
+
+In another terminal, call `http://localhost:8080/`. Now inspect the behavior instead of treating Kubernetes as magic:
+
+```bash
+kubectl describe deployment hello-cloud
+kubectl logs deployment/hello-cloud
+kubectl get events --sort-by=.lastTimestamp
+```
+
+Delete one Pod and watch the Deployment replace it. Change `replicas: 2` to `replicas: 3` and observe the rollout. Temporarily change the probe path to a nonexistent endpoint and watch the Pod become unready. Each experiment connects one manifest field to one operational outcome.
+
+For a remote cluster, push the image to a registry and replace `hello-cloud:dev` with an immutable tag such as `registry.example.com/hello-cloud:1.0.0`. Never rely on a mutable `latest` tag when you are learning rollbacks or debugging which artifact is running.
+
+### 4. Add a simple CI check
+
+Once the local and Kubernetes paths work, add `.github/workflows/ci.yml`:
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+      - run: go test ./...
+      - run: go vet ./...
+      - run: docker build -t hello-cloud:${{ github.sha }} .
+```
+
+This workflow is deliberately not a full deployment pipeline. It proves that a clean runner can check the source and build the same container. Add image publishing and deployment only after these steps are reliable. If a later deployment fails, you then know the failure is in the release or environment boundary rather than in basic compilation.
+
+### 5. What this one project teaches
+
+The Hello Cloud example maps the learning path to observable artifacts:
+
+| Stage | Artifact | Question answered |
+| --- | --- | --- |
+| Go | `main.go`, tests | Does the service behave correctly? |
+| Container | `Dockerfile` | Can it run from a reproducible image? |
+| Kubernetes | Deployment and Service | Can it restart, receive traffic, and report readiness? |
+| CI | GitHub Actions workflow | Can a clean machine verify and build it? |
+| Terraform | Cluster or supporting infrastructure | Can the environment be created and reviewed as code? |
+| AI/integration | Optional tool or assistant | Does the added capability have bounded inputs and tests? |
+
+You can extend the same project with a database, metrics, structured logs, Helm, Terraform, or an MCP tool. Add one boundary at a time. The goal is not to turn a greeting service into production software; it is to learn how a change travels from source code to a running system.
+
 ## Leave AI until you have a system to improve
 
 The AI and agents track includes an MCP server in Go, a terminal agent, a LangChain ReAct example, and Redis-based retrieval experiments. These projects are more valuable after you understand APIs, configuration, containers, and observability.
