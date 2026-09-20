@@ -7,9 +7,18 @@ Static site built with **Astro + Tailwind CSS + TypeScript**, served by **nginx*
 | | |
 |---|---|
 | **Site** | https://onenova.in · https://www.onenova.in |
-| **Email** | saurabh@onenova.in (Purelymail — **DNS for email is never modified by this project**) |
+| **Email** | saurabh@onenova.in (Zoho Mail — **DNS for email is never modified by this project**) |
 | **Stack** | Astro 5 · Tailwind 3 · TypeScript · SSG |
 | **Deploy** | Push `main` → Actions build → rsync to VM `/var/www/onenova` → nginx reload (see below) |
+
+### Ownership and hosting
+
+- The `onenova.in` domain was purchased through **Hostinger**.
+- **Cloudflare** is integrated for DNS and proxied HTTPS delivery.
+- The website origin runs on a **GCP VM** with nginx and Let’s Encrypt certificates.
+- Source of truth is the GitHub repository: [saurabhahuja71/onenova](https://github.com/saurabhahuja71/onenova).
+- Normal release flow: commit changes, run `git push origin main`, then monitor the **Deploy OneNova** GitHub Actions workflow. The workflow builds the site on GitHub-hosted Ubuntu, transfers `dist/` to the VM over SSH, and reloads nginx.
+- Cloudflare and Hostinger account credentials are intentionally not stored in this repository.
 
 > **Auto-deploy:** pushing to `main` triggers the **Deploy OneNova** workflow. It builds on `ubuntu-latest` and deploys over SSH to the VM. Monitor it under the repo’s **Actions** tab. Agents: read [AGENTS.md](AGENTS.md).
 
@@ -121,7 +130,7 @@ onenova/
 - Ubuntu / Debian / Oracle Linux on GCP
 - Ports **80** and **443** open (GCP firewall + host firewall)
 - DNS **A** (and optionally **AAAA**) for `onenova.in` and `www.onenova.in` → VM public IP
-- **Do not change** MX / TXT / SPF / DKIM / DMARC used by Purelymail
+- **Do not change** MX / TXT / SPF / DKIM / DMARC used by Zoho Mail
 
 ---
 
@@ -259,7 +268,7 @@ sudo certbot renew --dry-run
 | A | `@` | VM public IP |
 | A | `www` | VM public IP |
 
-Leave Purelymail MX/TXT alone.
+Leave Zoho Mail MX/TXT alone.
 
 ### GCP firewall
 
@@ -336,7 +345,7 @@ pnpm build:fast
 4. Certbot renews certificates; nginx is reloaded on renew hooks
 5. HSTS and security headers are set in the site config
 
-Email continues to use Purelymail’s DNS; this stack only serves **HTTP(S)** for the website.
+Email continues to use Zoho Mail’s DNS; this stack only serves **HTTP(S)** for the website.
 
 ---
 

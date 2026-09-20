@@ -251,7 +251,7 @@ Safe one-time bootstrap notes: `deploy/RUNNER.md`, `deploy/scripts/setup-vm-safe
 
 ---
 
-## DNS and HTTPS (Cloudflare Full Strict — recommended)
+## DNS and HTTPS (Cloudflare Full Strict — active integration)
 
 **Do not use Cloudflare Flexible SSL** (edge HTTPS only; origin stays HTTP; risk of loops / weaker security).
 
@@ -270,7 +270,7 @@ Visitor ──HTTPS──► Cloudflare ──HTTPS──► GCP VM (nginx + Let
 - `certbot renew --dry-run` succeeded  
 - GCP tags: `http-server`, `https-server` (ports 80/443)
 
-### You must set in Cloudflare dashboard
+### Cloudflare dashboard configuration
 
 1. **SSL/TLS → Overview** → **Full (Strict)**  
 2. **SSL/TLS → Edge Certificates**:
@@ -278,7 +278,7 @@ Visitor ──HTTPS──► Cloudflare ──HTTPS──► GCP VM (nginx + Let
    - **Automatic HTTPS Rewrites** = On  
 3. DNS A records for `@` and `www` → `136.67.97.86` (proxied orange cloud is fine once origin has LE cert)
 
-Do **not** change Purelymail MX/TXT for email.
+Do **not** change Zoho Mail MX/TXT for email.
 
 ### Verify
 

@@ -60,7 +60,7 @@ Full detail: [deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md) · [deploy/POST_CHANGE
 ## Safety
 
 - Do not reconfigure the Tradebots Actions runner for onenova.
-- Do not touch Purelymail / email DNS records.
+- Do not touch Zoho Mail / email DNS records.
 - Only write site files under `/var/www/onenova` on the deploy host.
 
 ## Verify before declaring success

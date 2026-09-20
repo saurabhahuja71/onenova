@@ -14,7 +14,7 @@
 #   - Obtains Let's Encrypt certs for onenova.in + www.onenova.in
 #
 # What this does NOT do:
-#   - Touch email/MX/TXT DNS for Purelymail
+#   - Touch email/MX/TXT DNS for Zoho Mail
 #   - Configure the GitHub Actions runner (already present)
 # =============================================================================
 set -euo pipefail
@@ -158,7 +158,7 @@ fi
 
 echo "==> Let's Encrypt certificates"
 echo "Ensure DNS A/AAAA records for ${DOMAIN} and ${WWW_DOMAIN} point to this VM."
-echo "Do NOT change MX/TXT records used by Purelymail."
+echo "Do NOT change MX/TXT records used by Zoho Mail."
 if [[ -f /etc/letsencrypt/live/${DOMAIN}/fullchain.pem ]]; then
   echo "Certificates already present."
 else
@@ -198,6 +198,6 @@ echo " VM setup complete"
 echo " Web root:     ${WEB_ROOT}"
 echo " Nginx user:   deploy as ${SITE_USER}"
 echo " Domains:      https://${DOMAIN}  https://${WWW_DOMAIN}"
-echo " Email DNS:    untouched (Purelymail)"
+echo " Email DNS:    untouched (Zoho Mail)"
 echo " Next: push to GitHub to trigger deploy.yml"
 echo "============================================"

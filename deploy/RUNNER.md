@@ -27,7 +27,7 @@ OneNova setup must **not** reinstall or reconfigure that runner.
 | Change runner labels/service without intent | ❌ No |
 | Remove default nginx site automatically | ❌ No |
 | Force global Node upgrade that breaks other jobs | ❌ No |
-| Touch Purelymail email DNS | ❌ No |
+| Touch Zoho Mail email DNS | ❌ No |
 
 ---
 
@@ -81,7 +81,7 @@ Allow ingress **TCP 80** and **TCP 443** to `136.67.97.86` (http-server / https-
 | A | `@` | `136.67.97.86` |
 | A | `www` | `136.67.97.86` |
 
-Leave Purelymail MX/TXT unchanged.
+Leave Zoho Mail MX/TXT unchanged.
 
 Then HTTPS:
 

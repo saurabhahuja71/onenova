@@ -12,7 +12,7 @@
 #   ❌ Does NOT install/reconfigure the Actions runner
 #   ❌ Does NOT change runner service, labels, or work folder
 #   ❌ Does NOT force a global Node upgrade if Node already works
-#   ❌ Does NOT touch Purelymail / email DNS
+#   ❌ Does NOT touch Zoho Mail / email DNS
 #   ❌ Does NOT overwrite unrelated nginx sites
 #
 # Usage (SSH to the runner as the same user that runs Actions):
