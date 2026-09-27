@@ -37,7 +37,7 @@ From Oracle corp network, SSH needs corkscrew:
 ```bash
 ssh -o "ProxyCommand=corkscrew www-proxy.us.oracle.com 80 %h %p" \
   -i ~/.ssh/id_ed255519 \
-  sauahuja@136.67.97.86 \
+  sauahuja@136.109.214.120 \
   'cd ~/onenova-site && git fetch origin main && git reset --hard origin/main \
    && source ~/.nvm/nvm.sh && nvm use 20 \
    && PUBLIC_GITHUB_USERNAME=saurabhahuja71 pnpm install \

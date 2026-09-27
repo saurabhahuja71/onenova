@@ -4,10 +4,10 @@
 #
 # Usage:
 #   ./deploy/scripts/deploy-remote.sh
-#   ONENOVA_SSH_HOST=136.67.97.86 ONENOVA_SSH_USER=sauahuja ./deploy/scripts/deploy-remote.sh
+#   ONENOVA_SSH_HOST=136.109.214.120 ONENOVA_SSH_USER=sauahuja ./deploy/scripts/deploy-remote.sh
 set -euo pipefail
 
-HOST="${ONENOVA_SSH_HOST:-136.67.97.86}"
+HOST="${ONENOVA_SSH_HOST:-136.109.214.120}"
 USER="${ONENOVA_SSH_USER:-sauahuja}"
 KEY="${ONENOVA_SSH_KEY:-$HOME/.ssh/id_ed255519}"
 PROXY="${ONENOVA_SSH_PROXY:-corkscrew www-proxy.us.oracle.com 80 %h %p}"

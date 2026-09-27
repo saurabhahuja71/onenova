@@ -313,7 +313,7 @@ Triggers:
 
 | Secret | Purpose |
 |--------|---------|
-| `ONENOVA_SSH_HOST` | VM address (`136.67.97.86`) |
+| `ONENOVA_SSH_HOST` | VM address (`136.109.214.120`) |
 | `ONENOVA_SSH_USER` | SSH user (`sauahuja`) |
 | `ONENOVA_SSH_KEY` | Private ed25519 deploy key authorized on the VM |
 

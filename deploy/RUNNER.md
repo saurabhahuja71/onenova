@@ -1,6 +1,6 @@
 # Deploy on GCP self-hosted runner (safe)
 
-**Runner IP:** `136.67.97.86`  
+**Runner IP:** `136.109.214.120`
 **Site root:** `/var/www/onenova` only  
 **Repo:** https://github.com/saurabhahuja71/onenova  
 
@@ -31,12 +31,12 @@ OneNova setup must **not** reinstall or reconfigure that runner.
 
 ---
 
-## One-time setup on `136.67.97.86`
+## One-time setup on `136.109.214.120`
 
 SSH as the **same user** that runs the Actions runner (often `sauahuja` or similar):
 
 ```bash
-ssh YOUR_USER@136.67.97.86
+ssh YOUR_USER@136.109.214.120
 ```
 
 ### 1) Confirm runner is healthy (do not change it)
@@ -72,14 +72,14 @@ It does **not** claim `default_server` and does **not** remove other sites.
 
 ### 4) GCP firewall
 
-Allow ingress **TCP 80** and **TCP 443** to `136.67.97.86` (http-server / https-server tags).
+Allow ingress **TCP 80** and **TCP 443** to `136.109.214.120` (http-server / https-server tags).
 
 ### 5) DNS (website only)
 
 | Type | Name | Value |
 |------|------|--------|
-| A | `@` | `136.67.97.86` |
-| A | `www` | `136.67.97.86` |
+| A | `@` | `136.109.214.120` |
+| A | `www` | `136.109.214.120` |
 
 Leave Zoho Mail MX/TXT unchanged.
 
@@ -103,13 +103,13 @@ Manual re-run: GitHub → Actions → Deploy OneNova → Run workflow.
 ## How to check the site
 
 ```text
-http://136.67.97.86/                 # after nginx + deploy (Host-based vhost may need Host header)
-http://136.67.97.86/   with Host: onenova.in
+http://136.109.214.120/                 # after nginx + deploy (Host-based vhost may need Host header)
+http://136.109.214.120/   with Host: onenova.in
 https://onenova.in/                  # after DNS + certbot
 ```
 
 ```bash
-curl -sS -H 'Host: onenova.in' http://136.67.97.86/ | head
+curl -sS -H 'Host: onenova.in' http://136.109.214.120/ | head
 curl -sS https://onenova.in/ | head
 ```
 
@@ -117,7 +117,7 @@ curl -sS https://onenova.in/ | head
 
 ## If Actions stays “queued”
 
-The runner process on `136.67.97.86` is offline or busy:
+The runner process on `136.109.214.120` is offline or busy:
 
 ```bash
 # on the VM — start the existing runner the way you already do, e.g.:

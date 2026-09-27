@@ -1,7 +1,7 @@
 # OneNova deployment guide
 
 **Site:** https://onenova.in  
-**Live server:** `136.67.97.86` (GCP VM `github-runner-free`)  
+**Live server:** `136.109.214.120` (GCP VM `github-runner-free`)
 **Web root:** `/var/www/onenova`  
 **Repo:** https://github.com/saurabhahuja71/onenova  
 **Site clone on VM:** `~/onenova-site`  
@@ -29,7 +29,7 @@ Repo secrets wired to the workflow:
 
 | Secret | Value |
 |--------|-------|
-| `ONENOVA_SSH_HOST` | `136.67.97.86` |
+| `ONENOVA_SSH_HOST` | `136.109.214.120` |
 | `ONENOVA_SSH_USER` | `sauahuja` |
 | `ONENOVA_SSH_KEY` | private ed25519 key; public half authorized on the VM |
 
@@ -59,7 +59,7 @@ Watch the run under the repo’s **Actions** tab after every push.
 
 ## Current state (important)
 
-The VM at **136.67.97.86** runs a self-hosted runner that belongs to another project:
+The VM at **136.109.214.120** runs a self-hosted runner that belongs to another project:
 
 ```text
 Tradebots71/covered_call_bot
@@ -87,19 +87,19 @@ That runner is **repo-scoped to Tradebots only** and is left untouched. **OneNov
 ### Check the live site by IP
 
 ```text
-http://136.67.97.86/
-http://136.67.97.86/profile/
-http://136.67.97.86/learning-path/
-http://136.67.97.86/experience/
-http://136.67.97.86/resume/
-http://136.67.97.86/contact/
+http://136.109.214.120/
+http://136.109.214.120/profile/
+http://136.109.214.120/learning-path/
+http://136.109.214.120/experience/
+http://136.109.214.120/resume/
+http://136.109.214.120/contact/
 ```
 
 Resume files:
 
 ```text
-http://136.67.97.86/resume/Saurabh-Ahuja-Latest.pdf
-http://136.67.97.86/resume/Saurabh-Ahuja-Latest.docx
+http://136.109.214.120/resume/Saurabh-Ahuja-Latest.pdf
+http://136.109.214.120/resume/Saurabh-Ahuja-Latest.docx
 ```
 
 ---
@@ -111,7 +111,7 @@ SSH to the VM (from Oracle network use corkscrew if needed):
 ```bash
 ssh -o "ProxyCommand=corkscrew www-proxy.us.oracle.com 80 %h %p" \
   -i ~/.ssh/id_ed255519 \
-  sauahuja@136.67.97.86
+  sauahuja@136.109.214.120
 ```
 
 Then:
@@ -163,7 +163,7 @@ Auto-deploy is already handled by **Option C** (GitHub-hosted). A second self-ho
 
 1. GitHub → **saurabhahuja71/onenova** → **Settings** → **Actions** → **Runners** → **New self-hosted runner**  
 2. Copy the registration token.  
-3. On `136.67.97.86`:
+3. On `136.109.214.120`:
 
 ```bash
 mkdir -p ~/actions-runner-onenova && cd ~/actions-runner-onenova
@@ -199,7 +199,7 @@ This is the current setup. `.github/workflows/deploy.yml` runs on `ubuntu-latest
 ```text
 push → ubuntu-latest → pnpm build:fast
      → deploy/scripts/deploy-remote-github.sh
-         rsync dist/ → sauahuja@136.67.97.86:/var/www/onenova
+         rsync dist/ → sauahuja@136.109.214.120:/var/www/onenova
          sudo nginx -t && sudo systemctl reload nginx
 ```
 
@@ -214,7 +214,7 @@ Secrets:
 
 ```bash
 gh secret set ONENOVA_SSH_KEY < onenova_deploy          # private key
-gh secret set ONENOVA_SSH_HOST -b 136.67.97.86
+gh secret set ONENOVA_SSH_HOST -b 136.109.214.120
 gh secret set ONENOVA_SSH_USER -b sauahuja
 ```
 
@@ -230,7 +230,7 @@ Live idea (simplified):
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
-    server_name onenova.in www.onenova.in 136.67.97.86 _;
+    server_name onenova.in www.onenova.in 136.109.214.120 _;
 
     root /var/www/onenova;
     index index.html;
@@ -276,7 +276,7 @@ Visitor ──HTTPS──► Cloudflare ──HTTPS──► GCP VM (nginx + Let
 2. **SSL/TLS → Edge Certificates**:
    - **Always Use HTTPS** = On  
    - **Automatic HTTPS Rewrites** = On  
-3. DNS A records for `@` and `www` → `136.67.97.86` (proxied orange cloud is fine once origin has LE cert)
+3. DNS A records for `@` and `www` → `136.109.214.120` (proxied orange cloud is fine once origin has LE cert)
 
 Do **not** change Zoho Mail MX/TXT for email.
 

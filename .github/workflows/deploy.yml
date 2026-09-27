@@ -2,11 +2,11 @@
 #
 # No self-hosted runner is required. On every push to main this workflow:
 #   1. Builds the Astro static site on ubuntu-latest
-#   2. rsyncs dist/ → sauahuja@136.67.97.86:/var/www/onenova (via SSH deploy key)
+#   2. rsyncs dist/ → sauahuja@136.109.214.120:/var/www/onenova (via SSH deploy key)
 #   3. Runs `sudo nginx -t && sudo systemctl reload nginx` on the VM
 #
 # Repo secrets required:
-#   ONENOVA_SSH_HOST     VM address (default 136.67.97.86)
+#   ONENOVA_SSH_HOST     VM address (default 136.109.214.120)
 #   ONENOVA_SSH_USER     SSH user (default sauahuja)
 #   ONENOVA_SSH_KEY      private ed25519 key authorized on the VM
 #   OPENAI_API_KEY       server-only key for the resume API (never bundled into dist/)

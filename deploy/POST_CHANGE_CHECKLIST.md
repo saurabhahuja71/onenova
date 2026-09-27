@@ -5,7 +5,7 @@ Use this every time you change content or site code that should appear on **http
 ## Why this exists
 
 **GitHub `main` ≠ live website.**  
-Production is a static tree on `136.67.97.86` at `/var/www/onenova`. Auto-deploy via Actions is **not** currently wired to a runner for this repo (see [DEPLOYMENT.md](./DEPLOYMENT.md)).
+Production is a static tree on `136.109.214.120` at `/var/www/onenova`. Auto-deploy via Actions is **not** currently wired to a runner for this repo (see [DEPLOYMENT.md](./DEPLOYMENT.md)).
 
 **Past mistake (2026-08-06):** Blog post pushed to GitHub; https://onenova.in/blog still outdated until manual deploy.
 
@@ -26,7 +26,7 @@ SSH (Oracle network):
 ```bash
 ssh -o "ProxyCommand=corkscrew www-proxy.us.oracle.com 80 %h %p" \
   -i ~/.ssh/id_ed255519 \
-  sauahuja@136.67.97.86
+  sauahuja@136.109.214.120
 ```
 
 On the VM:

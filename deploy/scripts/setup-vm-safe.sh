@@ -2,7 +2,7 @@
 # =============================================================================
 # SAFE one-time setup for onenova.in on an EXISTING GitHub Actions runner VM.
 #
-# Target example: 136.67.97.86 (GCP self-hosted runner)
+# Target example: 136.109.214.120 (GCP self-hosted runner)
 #
 # This script is intentionally conservative:
 #   ✅ Installs nginx/certbot only if missing (apt/dnf)
@@ -27,7 +27,7 @@ WEB_ROOT="${WEB_ROOT:-/var/www/onenova}"
 CERTBOT_WEBROOT="${CERTBOT_WEBROOT:-/var/www/certbot}"
 SITE_USER="${SUDO_USER:-${USER}}"
 EMAIL_FOR_LETSENCRYPT="${CERTBOT_EMAIL:-saurabh@onenova.in}"
-RUNNER_IP="${RUNNER_IP:-136.67.97.86}"
+RUNNER_IP="${RUNNER_IP:-136.109.214.120}"
 
 if [[ "${EUID}" -ne 0 ]]; then
   echo "Re-run with sudo: sudo $0"

@@ -4,13 +4,13 @@
 # Used by GitHub Actions (runs-on: ubuntu-latest) — no self-hosted runner needed.
 #
 # Requirements (repo secrets):
-#   ONENOVA_SSH_HOST   VM public IP / host (default 136.67.97.86)
+#   ONENOVA_SSH_HOST   VM public IP / host (default 136.109.214.120)
 #   ONENOVA_SSH_USER   SSH user on the VM (default sauahuja)
 #   ONENOVA_SSH_KEY    private ed25519 key authorized on the VM
 # =============================================================================
 set -euo pipefail
 
-HOST="${ONENOVA_SSH_HOST:-136.67.97.86}"
+HOST="${ONENOVA_SSH_HOST:-136.109.214.120}"
 USER="${ONENOVA_SSH_USER:-sauahuja}"
 KEY_FILE="${ONENOVA_SSH_KEY_FILE:-/tmp/onenova_deploy_key}"
 WEB_ROOT="${WEB_ROOT:-/var/www/onenova}"
