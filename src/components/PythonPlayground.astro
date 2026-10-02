@@ -55,6 +55,9 @@
       words: 'text = """\nPython makes it easy to learn by doing.\nDoing small projects builds confidence.\nPython projects become more useful with practice.\n"""\n\nwords = text.lower().replace(".", "").split()\ncounts = {}\n\nfor word in words:\n    counts[word] = counts.get(word, 0) + 1\n\nranking = sorted(counts.items(), key=lambda item: item[1], reverse=True)\n\nfor word, count in ranking[:5]:\n    print(f"{word}: {count}")',
     };
 
+    const pyodideVersion = '0.29.3';
+    const pyodideScriptUrl = `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/pyodide.js`;
+    const pyodideIndexUrl = `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`;
     let pyodidePromise;
 
     const setStatus = (message) => {
@@ -69,22 +72,38 @@
 
     const loadPyodide = async () => {
       if (!pyodidePromise) {
-        const version = '0.29.3';
         setStatus('Loading Python runtime…');
         pyodidePromise = new Promise((resolve, reject) => {
+          const initialize = () => {
+            if (typeof window.loadPyodide !== 'function') {
+              reject(new Error('The hosted Pyodide runtime did not initialize.'));
+              return;
+            }
+
+            window.loadPyodide({ indexURL: pyodideIndexUrl }).then(resolve, reject);
+          };
+
           const existing = document.querySelector('script[data-pyodide]');
           if (existing) {
-            existing.addEventListener('load', () => resolve(window.loadPyodide({ indexURL: `https://cdn.jsdelivr.net/pyodide/v${version}/full/` })));
-            existing.addEventListener('error', reject);
+            if (typeof window.loadPyodide === 'function') {
+              initialize();
+            } else {
+              existing.addEventListener('load', initialize, { once: true });
+              existing.addEventListener('error', () => reject(new Error('Could not download Pyodide from the hosted runtime.')), { once: true });
+            }
             return;
           }
 
           const script = document.createElement('script');
-          script.src = `https://cdn.jsdelivr.net/pyodide/v${version}/full/pyodide.js`;
+          script.src = pyodideScriptUrl;
           script.dataset.pyodide = 'true';
-          script.onload = () => resolve(window.loadPyodide({ indexURL: `https://cdn.jsdelivr.net/pyodide/v${version}/full/` }));
-          script.onerror = reject;
+          script.onload = initialize;
+          script.onerror = () => reject(new Error('Could not download Pyodide from the hosted runtime.'));
           document.head.appendChild(script);
+        }).catch((error) => {
+          // Allow a visitor to retry after a temporary CDN/network failure.
+          pyodidePromise = undefined;
+          throw error;
         });
       }
       return pyodidePromise;
@@ -114,6 +133,6 @@
     });
 
     setExample();
-    setStatus('Ready to run in your browser');
+    setStatus('Ready — click Run code to load Pyodide');
   }
 </script>
