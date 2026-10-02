@@ -3,7 +3,6 @@ import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import { formatDate, slugify } from '@lib/utils';
 import { readingTime } from '@lib/reading-time';
-import PythonPlayground from '@components/PythonPlayground.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -61,7 +60,6 @@ const rt = readingTime(body);
       </header>
 
       <div class="prose-onenova prose mt-10 border-t border-slate-200 pt-10 dark:border-slate-800">
-        {post.id === 'run-python-in-browser-pyodide' && <PythonPlayground />}
         <Content />
       </div>
 
