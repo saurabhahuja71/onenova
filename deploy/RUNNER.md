@@ -1,7 +1,9 @@
 # Deploy on GCP self-hosted runner (safe)
 
-**Runner IP:** `136.109.214.120`
+**Production target (cutover 2026-10-12):** OCI Mumbai `github-runner-oci` / **`92.4.92.63`**  
+**Legacy GCP (keep until DNS+Fyers done):** `136.109.214.120`  
 **Site root:** `/var/www/onenova` only  
+**SSH (corp):** `ssh github-runner-oci` (corkscrew)  
 **Repo:** https://github.com/saurabhahuja71/onenova  
 
 This machine already runs a GitHub Actions self-hosted runner used by **other** workflows.  

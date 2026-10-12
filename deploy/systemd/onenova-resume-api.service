@@ -4,7 +4,9 @@ After=network-online.target
 
 [Service]
 WorkingDirectory=%h/onenova-api
-ExecStart=%h/.nvm/versions/node/v20.20.2/bin/node %h/onenova-api/resume-api.mjs
+# Prefer system Node on OCI Mumbai (SELinux-safe). Fall back path kept in
+# deploy-remote-github.sh sed if /usr/bin/node is missing.
+ExecStart=/usr/bin/node %h/onenova-api/resume-api.mjs
 EnvironmentFile=%h/.config/onenova-resume-api.env
 Restart=on-failure
 RestartSec=5

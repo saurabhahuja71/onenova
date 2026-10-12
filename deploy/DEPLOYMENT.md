@@ -1,7 +1,7 @@
 # OneNova deployment guide
 
 **Site:** https://onenova.in  
-**Live server:** `136.109.214.120` (GCP VM `github-runner-free`)
+**Live server:** `92.4.92.63` (OCI Mumbai `github-runner-oci`) — cutover 2026-10-12. Legacy GCP `136.109.214.120` until fully decommissioned.
 **Web root:** `/var/www/onenova`  
 **Repo:** https://github.com/saurabhahuja71/onenova  
 **Site clone on VM:** `~/onenova-site`  
@@ -29,8 +29,8 @@ Repo secrets wired to the workflow:
 
 | Secret | Value |
 |--------|-------|
-| `ONENOVA_SSH_HOST` | `136.109.214.120` |
-| `ONENOVA_SSH_USER` | `sauahuja` |
+| `ONENOVA_SSH_HOST` | `92.4.92.63` |
+| `ONENOVA_SSH_USER` | `opc` |
 | `ONENOVA_SSH_KEY` | private ed25519 key; public half authorized on the VM |
 
 Watch the run under the repo’s **Actions** tab after every push.
