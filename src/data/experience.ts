@@ -18,7 +18,7 @@ export interface ExperienceItem {
 export const experience: ExperienceItem[] = [
   {
     company: 'Oracle India Pvt. Ltd.',
-    role: 'Principal Data Systems Engineer',
+    role: 'Sr Principal Data Systems Engineer',
     location: 'Bangalore, India',
     start: 'Oct 2017',
     end: 'Present',
