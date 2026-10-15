@@ -11,6 +11,9 @@ Curated hands-on repositories from [saurabhahuja71](https://github.com/saurabhah
 
 These are **practice labs**, not production frameworks. Each track is ordered from easier → harder when possible. Start with one track; finish a lab before jumping tracks.
 
+> **Featured workshop:** [Python by Example — interactive Python in the browser with Pyodide](https://github.com/saurabhahuja71/python-by-example)
+> — start coding without installing Python.
+
 > **How to use this hub**
 > 1. Pick a track that matches what you want to learn.
 > 2. Open the lab repo → read its README → follow **Quick start**.
