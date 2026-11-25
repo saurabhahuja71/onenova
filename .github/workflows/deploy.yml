@@ -12,7 +12,8 @@
 #   OPENAI_API_KEY       server-only key for the resume API (never bundled into dist/)
 # Optional:
 #   PERSONAL_GITHUB_TOKEN    higher GitHub API limits for stats/projects
-#   PUBLIC_FORMSPREE_ID      contact form backend id
+#   PUBLIC_FORMSPREE_ID              contact form backend id
+#   PUBLIC_FORMSPREE_NEWSLETTER_ID   optional dedicated newsletter form id
 #
 # git push origin main  →  site updates automatically.
 
@@ -67,6 +68,7 @@ jobs:
           PERSONAL_GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
           PUBLIC_GITHUB_USERNAME: ${{ env.PUBLIC_GITHUB_USERNAME }}
           PUBLIC_FORMSPREE_ID: ${{ secrets.PUBLIC_FORMSPREE_ID }}
+          PUBLIC_FORMSPREE_NEWSLETTER_ID: ${{ secrets.PUBLIC_FORMSPREE_NEWSLETTER_ID }}
           PUBLIC_SITE_URL: ${{ env.PUBLIC_SITE_URL }}
         run: pnpm run build:fast
 

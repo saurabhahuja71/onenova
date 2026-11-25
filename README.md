@@ -32,7 +32,7 @@ Static site built with **Astro + Tailwind CSS + TypeScript**, served by **nginx*
 - **Projects from GitHub** at build time (REST API) + curated fallbacks
 - **GitHub stats & contribution graph** (GraphQL when `GITHUB_TOKEN` / `PERSONAL_GITHUB_TOKEN` is set; public chart fallback otherwise)
 - **Certifications & achievements**
-- **Newsletter placeholder** (static; wire to Buttondown/ConvertKit later)
+- **Newsletter signup** (Formspree via `PUBLIC_FORMSPREE_NEWSLETTER_ID` or `PUBLIC_FORMSPREE_ID`; mailto fallback)
 - Contact form via **Formspree** or **mailto:** (nothing stored on the server)
 - Dark / light mode, particles background, responsive layout
 - SEO: Open Graph, Twitter cards, `robots.txt`, sitemap, JSON-LD, manifest, favicon, social image
@@ -202,6 +202,8 @@ PERSONAL_GITHUB_TOKEN=              # for contribution graph GraphQL
 
 Create a Formspree form → set `PUBLIC_FORMSPREE_ID` (repo secret for CI). Without it, the contact form uses `mailto:saurabh@onenova.in`.
 
+For a dedicated newsletter inbox, create a second Formspree form and set `PUBLIC_FORMSPREE_NEWSLETTER_ID`. If that secret is empty, the newsletter reuses `PUBLIC_FORMSPREE_ID`.
+
 ---
 
 ## Server setup (one time)
@@ -322,7 +324,8 @@ Triggers:
 | Secret | Purpose |
 |--------|---------|
 | `PERSONAL_GITHUB_TOKEN` | GraphQL contribution calendar + higher API limits |
-| `PUBLIC_FORMSPREE_ID` | Contact form backend |
+| `PUBLIC_FORMSPREE_ID` | Contact form backend (newsletter fallback too) |
+| `PUBLIC_FORMSPREE_NEWSLETTER_ID` | Optional dedicated newsletter Formspree form |
 
 `GITHUB_TOKEN` is provided automatically by Actions for public REST calls.
 
@@ -398,7 +401,7 @@ Target: **Lighthouse > 95** performance / accessibility / best practices / SEO o
 
 - [ ] Self-host Inter / JetBrains Mono (drop Google Fonts)
 - [ ] Real analytics (Umami / GoatCounter / Plausible) instead of counter badge
-- [ ] Wire newsletter to Buttondown or Listmonk
+- [x] Newsletter signup via Formspree (or mailto fallback)
 - [ ] Blog OG images generated per post
 - [ ] View Transitions API for in-app navigation
 - [ ] i18n if needed

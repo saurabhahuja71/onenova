@@ -1,13 +1,25 @@
 ---
 /**
- * Newsletter placeholder — static only.
- * Wire to Buttondown / ConvertKit / Listmonk later without changing layout.
+ * Newsletter signup — Formspree when configured, otherwise mailto fallback
+ * (same pattern as ContactForm.astro).
+ *
+ * Prefer PUBLIC_FORMSPREE_NEWSLETTER_ID for a dedicated Formspree form.
+ * Falls back to PUBLIC_FORMSPREE_ID so one form can serve both until you split them.
  */
+import { siteConfig } from '@data/site';
+
 interface Props {
   compact?: boolean;
 }
 
 const { compact = false } = Astro.props;
+
+const newsletterFormId =
+  import.meta.env.PUBLIC_FORMSPREE_NEWSLETTER_ID ||
+  import.meta.env.PUBLIC_FORMSPREE_ID ||
+  '';
+const email = siteConfig.author.email;
+const useFormspree = Boolean(newsletterFormId);
 ---
 
 <section
@@ -26,16 +38,24 @@ const { compact = false } = Astro.props;
       </h2>
       <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
         Occasional deep-dives on operators, databases, cloud infrastructure, and AI for platform teams.
-        No spam — unsubscribe anytime. <span class="italic">(Coming soon)</span>
+        No spam — unsubscribe anytime.
       </p>
     </div>
 
     <form
+      id="newsletter-form"
       class="mt-6 flex w-full max-w-md flex-col gap-2 sm:flex-row md:mt-0"
-      action="#"
-      method="post"
-      onsubmit="event.preventDefault(); const n=this.querySelector('[data-note]'); if(n){n.hidden=false;}"
+      method={useFormspree ? 'POST' : 'get'}
+      action={useFormspree ? `https://formspree.io/f/${newsletterFormId}` : '#'}
     >
+      {
+        useFormspree && (
+          <>
+            <input type="hidden" name="_subject" value="Newsletter signup — onenova.in" />
+            <input type="text" name="_gotcha" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          </>
+        )
+      }
       <label class="sr-only" for="newsletter-email">Email address</label>
       <input
         id="newsletter-email"
@@ -46,12 +66,44 @@ const { compact = false } = Astro.props;
         placeholder="you@company.com"
         class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none ring-brand-500 placeholder:text-slate-400 focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
       />
-      <button type="submit" class="btn-primary shrink-0" disabled title="Newsletter not enabled yet">
+      <button type="submit" class="btn-primary shrink-0">
         Notify me
       </button>
     </form>
   </div>
-  <p class="mt-3 hidden text-xs text-slate-500" data-note role="status">
-    Thanks — this form is a placeholder. Wire it to Buttondown, ConvertKit, or your ESP when ready.
-  </p>
+  <p id="newsletter-status" class="mt-3 hidden text-xs text-slate-500" role="status"></p>
+  {
+    !useFormspree && (
+      <p class="mt-3 text-xs text-slate-500">
+        Or email
+        <a class="text-brand-600 hover:underline dark:text-brand-400" href={`mailto:${email}?subject=${encodeURIComponent('Newsletter signup — onenova.in')}`}>{email}</a>
+        to join the list.
+      </p>
+    )
+  }
 </section>
+
+{
+  !useFormspree && (
+    <script define:vars={{ email }}>
+      const form = document.getElementById('newsletter-form');
+      const status = document.getElementById('newsletter-status');
+      form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const from = String(fd.get('email') || '').trim();
+        if (!from) return;
+        const subject = encodeURIComponent('Newsletter signup — onenova.in');
+        const body = encodeURIComponent(
+          `Please add this address to the OneNova notes list:\n\n${from}\n`,
+        );
+        if (status) {
+          status.hidden = false;
+          status.classList.remove('hidden');
+          status.textContent = 'Opening your email app to complete signup…';
+        }
+        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      });
+    </script>
+  )
+}
