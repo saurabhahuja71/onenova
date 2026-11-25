@@ -3,7 +3,7 @@ export const siteConfig = {
   title: 'Saurabh Ahuja — Principal Platform Engineer',
   shortName: 'OneNova',
   description:
-    'Principal Platform Engineer with 16+ years of experience building cloud-native platforms, Kubernetes operators, identity-aware infrastructure, and secure deployment pipelines. Strong expertise in Go, Kubernetes, OCI, Terraform, Ansible, and CI/CD with hands-on experience supporting enterprise identity systems using Oracle Identity Cloud Service (IDCS), OAuth2, SAML, and role-based access control.',
+    'Principal Platform Engineer with 16+ years of experience building cloud-native platforms, Kubernetes operators, identity-aware infrastructure, and secure deployment pipelines. Strong expertise in Go, Kubernetes, OCI, Terraform, Ansible, and CI/CD with hands-on experience supporting enterprise identity systems using Oracle Identity Cloud Service (IDCS), OAuth2, SAML, and role-based access control. Currently Sr Principal Data Systems Engineer at Oracle India, working on Oracle Database platforms including RAC, True Cache, Data Guard, Restart, and CMAN on Kubernetes (26ai / 23ai / 19c).',
   url: 'https://onenova.in',
   locale: 'en_IN',
   author: {
@@ -13,7 +13,7 @@ export const siteConfig = {
     company: 'Oracle India',
     team: 'Cloud-native database platforms · Kubernetes operators · Identity-aware infrastructure',
     location: 'Bangalore, India',
-    bio: 'Principal Platform Engineer | Kubernetes operators | Go | OCI | Oracle Database | Identity-aware infrastructure | CI/CD',
+    bio: 'Principal Platform Engineer | Kubernetes operators | Go | OCI | Oracle Database · True Cache · Data Guard | Identity-aware infrastructure | CI/CD',
     yearsExperience: '16+',
   },
   social: {

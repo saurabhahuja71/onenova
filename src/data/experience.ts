@@ -40,6 +40,7 @@ export const experience: ExperienceItem[] = [
       'Oracle Database',
       'True Cache',
       'Data Guard',
+      'CMAN',
       'OCI',
       'OKE',
       'Terraform',
@@ -147,6 +148,6 @@ export const education: EducationItem[] = [
     field: 'Information Technology',
     start: '2005',
     end: '2009',
-    details: 'Bachelor of Engineering in Information Technology.',
+    details: 'Bachelor of Engineering in Information Technology · CGPA 7.9.',
   },
 ];
