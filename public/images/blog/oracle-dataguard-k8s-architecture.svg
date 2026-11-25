@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780" role="img" aria-labelledby="title desc">
+  <title id="title">Oracle Data Guard on Kubernetes with OraOperator</title>
+  <desc id="desc">Same-cluster SIDB primary and physical standby with DataguardBroker runner, ClusterIP services, and redo transport.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#34d399"/>
+    </marker>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1040" height="780" rx="16" fill="url(#bg)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">Oracle Data Guard on Kubernetes (SIDB + Broker)</text>
+  <text x="32" y="62" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Same-cluster TCP Quick Start · primary SIDB · standby SIDB · DataguardBroker runner</text>
+
+  <rect x="24" y="84" width="992" height="560" rx="14" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="40" y="108" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.06em">KUBERNETES CLUSTER (OKE / ANY SUPPORTED CNCF CLUSTER)</text>
+
+  <!-- You -->
+  <g filter="url(#soft)">
+    <rect x="40" y="128" width="130" height="70" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="105" y="156" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600">You / CI</text>
+  <text x="105" y="176" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">apply 3 CRs</text>
+
+  <line x1="170" y1="163" x2="210" y2="163" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- CRs -->
+  <g filter="url(#soft)">
+    <rect x="212" y="118" width="220" height="90" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="322" y="144" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">CUSTOM RESOURCES</text>
+  <text x="322" y="166" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">SIDB primary + standby</text>
+  <text x="322" y="186" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">DataguardBroker</text>
+
+  <line x1="432" y1="163" x2="478" y2="163" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Operator -->
+  <g filter="url(#soft)">
+    <rect x="480" y="118" width="240" height="90" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="600" y="144" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">OPERATOR NS</text>
+  <text x="600" y="166" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">Oracle Database Operator</text>
+  <text x="600" y="186" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">SIDB + DataguardBroker controllers</text>
+
+  <!-- Namespace -->
+  <rect x="40" y="230" width="960" height="390" rx="12" fill="#0b1220" stroke="#475569" stroke-width="1.5"/>
+  <text x="56" y="254" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.05em">NAMESPACE: default (sample)</text>
+
+  <!-- Primary -->
+  <g filter="url(#soft)">
+    <rect x="56" y="276" width="280" height="160" rx="10" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="196" y="304" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">PRIMARY SIDB</text>
+  <text x="196" y="328" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">sidb-sample · SID ORCL1</text>
+  <text x="196" y="350" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">createAs: primary</text>
+  <text x="196" y="370" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">archiveLog · forceLog · flashBack</text>
+  <text x="196" y="390" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">dataguard.prereqs.enabled</text>
+  <text x="196" y="414" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">svc DNS · ClusterIP :1521</text>
+
+  <!-- Standby -->
+  <g filter="url(#soft)">
+    <rect x="380" y="276" width="280" height="160" rx="10" fill="url(#card)" stroke="#fb7185" stroke-width="1.5"/>
+  </g>
+  <text x="520" y="304" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">STANDBY SIDB</text>
+  <text x="520" y="328" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">standbydatabase-sample · ORCLS</text>
+  <text x="520" y="350" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">createAs: standby</text>
+  <text x="520" y="370" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">primarySource.databaseRef</text>
+  <text x="520" y="390" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">PHYSICAL_STANDBY · APPLY-ON</text>
+  <text x="520" y="414" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">owns Broker runner (sourceRef)</text>
+
+  <!-- Broker -->
+  <g filter="url(#soft)">
+    <rect x="700" y="276" width="280" height="160" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="840" y="304" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">DATAGUARDBROKER</text>
+  <text x="840" y="328" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">standbydatabase-sample-dg</text>
+  <text x="840" y="350" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">runner Pod + DGMGRL</text>
+  <text x="840" y="370" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">members: ORCL1 + ORCLS</text>
+  <text x="840" y="390" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ops: switchover · FSFO · mode</text>
+  <text x="840" y="414" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">apply only when both Healthy</text>
+
+  <!-- Redo arrow -->
+  <line x1="336" y1="340" x2="378" y2="340" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#arrowAmber)"/>
+  <text x="357" y="328" text-anchor="middle" fill="#fbbf24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">redo</text>
+
+  <line x1="660" y1="340" x2="698" y2="340" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="679" y="328" text-anchor="middle" fill="#34d399" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">manage</text>
+
+  <!-- Secrets + storage row -->
+  <g filter="url(#soft)">
+    <rect x="56" y="460" width="280" height="100" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="196" y="490" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">SHARED SECRETS</text>
+  <text x="196" y="514" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">db-admin-secret (oracle_pwd)</text>
+  <text x="196" y="536" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ocr-reg-cred · optional TDE/TLS</text>
+
+  <g filter="url(#soft)">
+    <rect x="360" y="460" width="300" height="100" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="510" y="490" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">PERSISTENCE</text>
+  <text x="510" y="514" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">PVC oradata each SIDB (oci-bv)</text>
+  <text x="510" y="536" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">same image tag primary + standby</text>
+
+  <g filter="url(#soft)">
+    <rect x="684" y="460" width="296" height="100" rx="10" fill="url(#card)" stroke="#f472b6" stroke-width="1.5"/>
+  </g>
+  <text x="832" y="490" text-anchor="middle" fill="#f9a8d4" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">CROSS-CLUSTER VARIANT</text>
+  <text x="832" y="514" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">NLB + ExternalDNS / connectString</text>
+  <text x="832" y="536" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Broker in standby cluster</text>
+
+  <text x="56" y="590" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Order: primary Healthy → standby Healthy (PHYSICAL_STANDBY) → one DataguardBroker · Resource names stay fixed across switchover; roles move</text>
+
+  <rect x="24" y="668" width="992" height="88" rx="12" fill="#0b1220" stroke="#334155" stroke-width="1"/>
+  <text x="44" y="698" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600">Mental model</text>
+  <text x="44" y="720" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">1) Two SIDBs hold the databases  2) Broker CR configures and operates the DG config  3) Runner Pod is your DGMGRL shell  4) kubectl ops patch Broker (or DGMGRL)</text>
+  <text x="44" y="740" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Official path: docs/sidb § Data Guard · samples: *_dataguard_primary/standby.yaml + dataguardbroker_same_cluster_tcp.yaml</text>
+</svg>
