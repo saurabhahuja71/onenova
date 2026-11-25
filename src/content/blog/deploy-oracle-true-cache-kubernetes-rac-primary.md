@@ -1,7 +1,8 @@
 ---
 title: "Deploy Oracle True Cache on Kubernetes Next to Your Apps (RAC Primary Outside the Cluster)"
-description: "New-user architecture guide: Oracle True Cache SIDB in OKE beside your app, Oracle RAC primary outside, Database Operator 2.2, blob ConfigMap, private NLB + ExternalDNS, dual JDBC pools, and verification."
+description: "New-user architecture guide: Oracle True Cache SIDB in OKE beside your app, Oracle RAC primary outside, same-cluster TDE/TCPS examples, Database Operator 2.2, blob ConfigMap, private NLB + ExternalDNS, dual JDBC pools, and verification."
 pubDate: 2026-11-25
+updatedDate: 2026-11-25
 author: "Saurabh Ahuja"
 tags:
   - oracle
@@ -9,6 +10,8 @@ tags:
   - kubernetes
   - database-operator
   - oracle-rac
+  - tcps
+  - tde
   - oke
   - platform-engineering
   - databases
@@ -29,17 +32,20 @@ This guide is written for **new users**: platform engineers, DBAs, and applicati
 > - Operator True Cache docs (SIDB): [docs/sidb § True Cache](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb#true-cache)
 > - Detailed runbook: [`docs/sidb/truecache/TRUECACHE.md`](https://github.com/oracle/oracle-database-operator/blob/main/docs/sidb/truecache/TRUECACHE.md)
 > - External RAC sample: [`singleinstancedatabase_truecache_external_rac.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_truecache_external_rac.yaml)
+> - Same-cluster TDE/TCPS: [`singleinstancedatabase_truecache_primary_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_truecache_primary_tcps.yaml) + [`singleinstancedatabase_truecache_same_cluster_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_truecache_same_cluster_tcps.yaml)
+> - TCPS certificates: [`docs/sidb/tcps-cert-manager`](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb/tcps-cert-manager)
 > - MAA guide: [Deploying Oracle True Cache on Kubernetes with an Oracle RAC Database Primary (PDF)](https://www.oracle.com/a/otn/docs/deploy-truecache-k8s-for-oracle-rac.pdf)
 > - Short overview: [Bring Oracle True Cache Closer to Your Kubernetes Applications](https://blogs.oracle.com/database/bring-oracle-true-cache-closer-to-your-kubernetes-applications)
 
 **What you will achieve**
 
 - Build a clear mental model of **app + True Cache in OKE**, **RAC primary outside**, and the **callback path** through private NLB + DNS  
-- Know which operator path to pick: same-cluster SIDB primary vs remote/external RAC  
+- Know which operator path to pick: same-cluster SIDB primary (TCP or **TDE/TCPS**) vs remote/external RAC  
 - Run **pre-flight checks** (network, secrets, blob, ExternalDNS, operator ≥ 2.2)  
 - Apply the official external RAC sample and watch logs until **DATABASE IS READY TO USE**  
+- Deploy a **same-cluster TCPS** primary + True Cache with cert-manager TLS Secrets  
 - Verify with `v$database`, `v$true_cache`, and service association  
-- Point a read-only JDBC/UCP pool at the in-cluster True Cache service  
+- Point a read-only JDBC/UCP pool at the in-cluster True Cache service (TCP or TCPS)  
 
 > **Operator version:** this post targets **Oracle Database Operator 2.2.0+** and the `database.oracle.com/v4` `SingleInstanceDatabase` API. True Cache needs a **True Cache capable Enterprise** image (Oracle AI Database 26ai / 23ai RU line used in the samples). Prefer `spec.services.endpoints` over the legacy `services.external` shape.
 
@@ -555,6 +561,166 @@ Full descriptor form for the RO pool:
 
 Wire your framework (Helidon + UCP in the MAA example, or Spring, Micronaut, etc.) so **only read-only code paths** use the RO pool. Writes stay on the primary pool.
 
+**TCPS client (same-cluster lab):** after the [same-cluster TDE/TCPS](#same-cluster-true-cache-with-tde-and-tcps) path below, use protocol TCPS and port **2484**, with a client wallet that trusts the leaf chain (operator status often publishes `tcpsConnectString` when TCPS is enabled).
+
+---
+
+## Same-cluster True Cache with TDE and TCPS
+
+Use this path when the **primary is also a SIDB in the same cluster/namespace** and you want encrypted listeners. Official procedure: [True Cache Setup with TDE and TCPS](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb#true-cache-setup-with-tde-and-tcps).
+
+```bash
+export NS=default
+export PRIMARY=sidb-sample
+export TRUECACHE=truecache
+```
+
+### What changes vs plain TCP / external RAC
+
+| Item | Same-cluster TCPS |
+|------|-------------------|
+| Primary | SIDB `createAs: primary` with `trueCache.generateBlob` + `security.tcps` |
+| True Cache | `primarySource.databaseRef` (not external `connectString`) |
+| Secrets | Shared admin + TDE; TLS Secret(s) from cert-manager |
+| Listeners | ClusterIP endpoints with **TCP 1521** and **TCPS 2484** |
+| Blob | Operator publishes ConfigMap `$PRIMARY-truecache-blob` — no DBCA copy from RAC |
+
+### 1. Certificates (shared CA design)
+
+True Cache and Data Guard reuse the same PKI helpers under [`docs/sidb/tcps-cert-manager`](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb/tcps-cert-manager):
+
+1. Root + intermediate CA on the primary side  
+2. Leaf Secrets with Server + Client Auth EKU (`tls.crt` / `tls.key` / `ca.crt`)  
+3. SANs that cover every hostname clients and partners use (Service DNS, short name, optional FQDN)
+
+Defaults often create `sidb-primary-tcps-tls` (and a peer leaf such as `sidb-standby-tcps-tls`). For same-cluster True Cache, the sample may **reuse** `sidb-primary-tcps-tls` on the True Cache SIDB when SANs cover both names; otherwise issue a dedicated leaf (for example `sidb-truecache-tcps-tls`).
+
+```bash
+# After running the cert-manager helpers for your NS / DNS names:
+kubectl wait -n "$NS" --for=condition=Ready certificate/sidb-primary-tcps --timeout=5m
+kubectl get secret sidb-primary-tcps-tls -n "$NS" \
+  -o custom-columns=NAME:.metadata.name,TYPE:.type
+```
+
+**Expect:** Secret type `kubernetes.io/tls`.
+
+### 2. Primary SIDB (TCPS + blob generation)
+
+Sample: [`singleinstancedatabase_truecache_primary_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_truecache_primary_tcps.yaml)
+
+```yaml
+apiVersion: database.oracle.com/v4
+kind: SingleInstanceDatabase
+metadata:
+  name: sidb-sample
+  namespace: default
+spec:
+  sid: ORCLPRD
+  pdbName: APPPDB1
+  edition: enterprise
+  createAs: primary
+  archiveLog: true
+  security:
+    secrets:
+      admin:
+        secretName: db-admin-secret
+        secretKey: oracle_pwd
+        keepSecret: true
+      tde:
+        secretName: tde-wallet-secret
+        secretKey: tde_wallet_pwd
+    tcps:
+      enabled: true
+      tlsSecret: sidb-primary-tcps-tls
+  image:
+    pullFrom: container-registry.oracle.com/database/enterprise_ru:latest
+    pullSecrets: ocr-reg-cred
+  trueCache:
+    generateBlob: true
+    createConfigMap: true
+    generatePath: /tmp/tc_config_blob.tar.gz
+  services:
+    endpoints:
+      - name: listener
+        type: ClusterIP
+        tcp:
+          enabled: true
+          port: 1521
+        tcps:
+          enabled: true
+          port: 2484
+  persistence:
+    oradata:
+      size: 60Gi
+      storageClass: oci-bv
+      accessMode: ReadWriteOnce
+  replicas: 1
+```
+
+```bash
+kubectl apply -f singleinstancedatabase_truecache_primary_tcps.yaml
+kubectl wait --for=jsonpath='{.status.status}'=Healthy \
+  "singleinstancedatabase/$PRIMARY" -n "$NS" --timeout=60m
+kubectl wait --for=jsonpath='{.binaryData.tc_config_blob\.tar\.gz}' \
+  "configmap/$PRIMARY-truecache-blob" -n "$NS" --timeout=20m
+```
+
+### 3. True Cache SIDB (TCPS)
+
+Sample: [`singleinstancedatabase_truecache_same_cluster_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_truecache_same_cluster_tcps.yaml)
+
+Key differences from the external RAC CR:
+
+```yaml
+createAs: truecache
+primarySource:
+  databaseRef: sidb-sample
+trueCache:
+  blobConfigMapRef: sidb-sample-truecache-blob
+  blobConfigMapKey: tc_config_blob.tar.gz
+  blobMountPath: /stage/tc_config_blob.tar.gz
+  trueCacheServices:
+    - "APPPDB1:TPDB_PRIMARY:tpdb_cache"
+security:
+  secrets:
+    admin: { secretName: db-admin-secret, secretKey: oracle_pwd, keepSecret: true }
+    tde: { secretName: tde-wallet-secret, secretKey: tde_wallet_pwd }
+  tcps:
+    enabled: true
+    tlsSecret: sidb-primary-tcps-tls   # or dedicated leaf when SANs differ
+services:
+  endpoints:
+    - name: listener
+      type: ClusterIP
+      tcp: { enabled: true, port: 1521 }
+      tcps: { enabled: true, port: 2484 }
+```
+
+```bash
+kubectl apply -f singleinstancedatabase_truecache_same_cluster_tcps.yaml
+kubectl wait --for=jsonpath='{.status.status}'=Healthy \
+  "singleinstancedatabase/$TRUECACHE" -n "$NS" --timeout=60m
+kubectl get singleinstancedatabase "$TRUECACHE" -n "$NS" -o wide
+kubectl get svc "$TRUECACHE" -n "$NS" -o yaml | grep -E 'port:|name:'
+```
+
+**Expect:** role `TRUE_CACHE`, status `Healthy`, Service ports **1521** and **2484**.
+
+### 4. Verify TCPS path
+
+```bash
+kubectl get singleinstancedatabase "$PRIMARY" "$TRUECACHE" -n "$NS" \
+  -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.status}{"\t"}{.status.role}{"\t"}{.status.tcpsConnectString}{"\n"}{end}'
+
+kubectl logs -n "$NS" -l "app=$TRUECACHE" --tail=100 | grep -E 'READY TO USE|TRUE_CACHE|TCPS'
+```
+
+Connect with a wallet that trusts the published chain (SQL\*Plus / JDBC with `oracle.net.wallet_location` or equivalent). Easy Connect-style TCPS still needs the trust material—plain `sqlplus @//host:2484/svc` without a wallet fails TLS handshake.
+
+### Cross-cluster / peered TCPS
+
+For a primary in another cluster, use the peered TCPS samples (`singleinstancedatabase_truecache_primary_tcps_peered.yaml` and related remote-primary docs) with LoadBalancer/NLB endpoints and the shared intermediate CA copied to the peer cluster ([SEPARATE_CLUSTER_ACCESS](https://github.com/oracle/oracle-database-operator/blob/main/docs/sidb/tcps-cert-manager/SEPARATE_CLUSTER_ACCESS.md)). Keep TCP bootstrap `connectString` when the sample documents it; enable TCPS on endpoints for encrypted traffic after trust is in place.
+
 ---
 
 ## Troubleshooting (first-time failures)
@@ -567,6 +733,8 @@ Wire your framework (Helidon + UCP in the MAA example, or Spring, Micronaut, etc
 | Create hangs on DBCA | Primary TCP bootstrap | `connectString` from TC pod; wallet open on primary |
 | Healthy pod but no association | `autoTCServiceRegistration` / helper | Helper on all RAC nodes; `externaljob.ora`; or run manual helper from logs |
 | App RO errors | Wrong service / PDB | `lsnrctl status` on TC; service name matches pool |
+| TCPS handshake fails | SAN / CA mismatch | Leaf SANs cover Service DNS; client trusts intermediate+root; same CA tree on both SIDBs |
+| TCPS Secret wrong type | Incomplete cert helper | Secret must be `kubernetes.io/tls` with `tls.crt`/`tls.key`/`ca.crt` |
 | Using OCI HTTP LB | Wrong LB product | Switch annotations to Network Load Balancer |
 
 Deep gates: [TRUECACHE.md — Fast troubleshooting](https://github.com/oracle/oracle-database-operator/blob/main/docs/sidb/truecache/TRUECACHE.md#fast-troubleshooting-gates).
@@ -614,13 +782,17 @@ No for this SIDB True Cache pattern. You need ordinary cluster networking plus (
 2. MAA PDF for the OCI networking and ExternalDNS walkthrough with RAC outside.  
 3. Product guide for SQL-level True Cache behavior and connection methods.
 
+### When should I use TCPS instead of TCP?
+
+Use **TCP** for the first lab (external RAC or same-cluster Quick Start). Add **TDE/TCPS** when listeners must be encrypted—same-cluster path in this post, or peered/cross-cluster TCPS samples with a shared intermediate CA. See also the [Data Guard TDE/TCPS](/blog/deploy-oracle-data-guard-kubernetes-sidb/#same-cluster-data-guard-with-tde-and-tcps) section; both reuse [`tcps-cert-manager`](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb/tcps-cert-manager).
+
 ---
 
 ## SEO-friendly takeaways
 
 **Primary question:** *How do I deploy Oracle True Cache on Kubernetes next to my application with an Oracle RAC primary outside the cluster?*  
 
-**Answer:** Install Oracle Database Operator 2.2+, prepare network/DNS/secrets, create a DBCA True Cache blob ConfigMap from the RAC primary, apply a `SingleInstanceDatabase` with `createAs: truecache` and `primarySource.connectString` (sample `singleinstancedatabase_truecache_external_rac.yaml`), expose the listener with an **internal OCI NLB** and ExternalDNS hostname the primary can resolve, wait for **DATABASE IS READY TO USE**, verify `TRUE CACHE` / `READ ONLY WITH APPLY`, then point a read-only JDBC pool at the in-cluster ClusterIP service and True Cache service name.
+**Answer:** Install Oracle Database Operator 2.2+, prepare network/DNS/secrets, create a DBCA True Cache blob ConfigMap from the RAC primary, apply a `SingleInstanceDatabase` with `createAs: truecache` and `primarySource.connectString` (sample `singleinstancedatabase_truecache_external_rac.yaml`), expose the listener with an **internal OCI NLB** and ExternalDNS hostname the primary can resolve, wait for **DATABASE IS READY TO USE**, verify `TRUE CACHE` / `READ ONLY WITH APPLY`, then point a read-only JDBC pool at the in-cluster ClusterIP service and True Cache service name. For same-cluster encrypted listeners, use the TDE/TCPS samples with cert-manager Secrets and ports **1521** + **2484**.
 
 **Keywords covered naturally:** Oracle True Cache Kubernetes, OraOperator SIDB truecache, True Cache OKE RAC primary, ExternalDNS OCI NLB True Cache, dual UCP datasource True Cache, v$true_cache verification.
 

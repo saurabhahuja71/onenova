@@ -1,7 +1,8 @@
 ---
 title: "Deploy Oracle Data Guard on Kubernetes with SIDB and DataguardBroker"
-description: "New-user architecture guide: same-cluster Data Guard Quick Start with Oracle Database Operator—primary and standby SIDBs, DataguardBroker runner, DGMGRL verify, switchover, protection modes, FSFO, and cross-cluster NLB paths."
+description: "New-user architecture guide: same-cluster Data Guard Quick Start with Oracle Database Operator—primary and standby SIDBs, TDE/TCPS examples, DataguardBroker runner, DGMGRL verify, switchover, protection modes, FSFO, and cross-cluster NLB paths."
 pubDate: 2026-11-25
+updatedDate: 2026-11-25
 author: "Saurabh Ahuja"
 tags:
   - oracle
@@ -9,6 +10,8 @@ tags:
   - kubernetes
   - database-operator
   - sidb
+  - tcps
+  - tde
   - oke
   - platform-engineering
   - databases
@@ -31,6 +34,8 @@ This guide is written for **new users**: platform engineers and DBAs who know ba
 >
 > - Operator Data Guard docs: [docs/sidb § Data Guard](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb#data-guard)
 > - Same-cluster TCP Quick Start samples: [`singleinstancedatabase_dataguard_primary.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_dataguard_primary.yaml), [`singleinstancedatabase_dataguard_standby.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_dataguard_standby.yaml), [`dataguardbroker_same_cluster_tcp.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/dataguardbroker_same_cluster_tcp.yaml)
+> - Same-cluster TDE/TCPS samples: [`singleinstancedatabase_dataguard_primary_tde_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_dataguard_primary_tde_tcps.yaml), [`singleinstancedatabase_dataguard_standby_tde_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_dataguard_standby_tde_tcps.yaml), [`dataguardbroker_same_cluster_tde_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/dataguardbroker_same_cluster_tde_tcps.yaml)
+> - TCPS certificates: [`docs/sidb/tcps-cert-manager`](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb/tcps-cert-manager)
 > - Cross-cluster TCP + NLB: [`DATAGUARD_CROSS_CLUSTER_LB.md`](https://github.com/oracle/oracle-database-operator/blob/main/docs/sidb/dataguard/DATAGUARD_CROSS_CLUSTER_LB.md)
 > - Cross-cluster TCPS + NLB: [`DATAGUARD_CROSS_CLUSTER_TCPS_NLB.md`](https://github.com/oracle/oracle-database-operator/blob/main/docs/sidb/dataguard/DATAGUARD_CROSS_CLUSTER_TCPS_NLB.md)
 > - Product concepts: [Oracle Data Guard Concepts and Administration](https://docs.oracle.com/en/database/oracle/oracle-database/26/sbydb/)
@@ -38,8 +43,9 @@ This guide is written for **new users**: platform engineers and DBAs who know ba
 **What you will achieve**
 
 - See how **two SIDBs + one DataguardBroker** map to pods, Services, and a Broker runner  
-- Choose the right path: same-cluster TCP, same-cluster TDE/TCPS, or cross-cluster NLB  
+- Choose the right path: same-cluster TCP, same-cluster **TDE/TCPS**, or cross-cluster NLB  
 - Run **pre-flight** checks and apply the Quick Start in order (primary → standby → Broker)  
+- Walk a full **TDE + TCPS** same-cluster example (certs, wallet export, Broker TCPS endpoints)  
 - Verify with **DGMGRL** from the Broker runner (`SHOW CONFIGURATION`, `VALIDATE DATABASE`)  
 - Perform **switchover** and other day-2 ops via `kubectl patch` or DGMGRL  
 - Know when to generate Broker YAML instead of using the stock sample  
@@ -535,16 +541,240 @@ Full procedure: [`DATAGUARD_CROSS_CLUSTER_LB.md`](https://github.com/oracle/orac
 
 ---
 
-## TDE and TCPS same-cluster (what changes)
+## Same-cluster Data Guard with TDE and TCPS
 
-Compared with the TCP Quick Start you also need:
+Official procedure: [Data Guard Setup with TDE and TCPS](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb#data-guard-setup-with-tde-and-tcps). Use this after the TCP Quick Start feels familiar.
 
-- TDE Secrets on primary; standby wallet Secret built from the **exported primary wallet** before standby apply  
-- TCPS TLS Secrets (often separate SANs for primary and standby)  
-- Primary `dataguard.standbySources` with TCP `1521` and TCPS `2484`  
-- Broker sample `dataguardbroker_same_cluster_tde_tcps.yaml` and client wallet placement for the runner  
+```bash
+export NS=default
+export PRIMARY_DB=sidb-sample
+export STANDBY_DB=standbydatabase-sample
+export DGB=standbydatabase-sample-dg
+```
 
-Walkthrough: [Data Guard Setup with TDE and TCPS](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb#data-guard-setup-with-tde-and-tcps).
+### Extra prerequisites vs TCP Quick Start
+
+| Requirement | Example | Notes |
+|-------------|---------|-------|
+| Primary TDE password Secret | `tde-wallet-secret` / `tde_wallet_pwd` | Create before primary apply |
+| TCPS leaf Secrets | `sidb-primary-tcps-tls`, `sidb-standby-tcps-tls` | From [tcps-cert-manager](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb/tcps-cert-manager); SANs cover each Service DNS |
+| Standby TDE wallet Secret | `sidb-standby-tde-wallet` with `wallet.zip` (+ password key on 23ai+) | Built from **current** primary wallet **after** primary is Healthy, **before** standby apply |
+| Primary `standbySources` | host + `tcpPort: 1521` + `tcpsPort: 2484` | Required in the TDE/TCPS sample |
+| Broker | `dataguardbroker_same_cluster_tde_tcps.yaml` | TCP **and** TCPS member endpoints; client wallet Secrets |
+
+PKI design (same as True Cache): one shared intermediate CA; each member leaf has Server + Client Auth EKU. Independent CA trees break mutual authentication.
+
+### 1. Create certificates
+
+With cert-manager installed, run the helper for the **same** context for both members. Override `NS` and DNS SAN lists to match Service names (`sidb-sample.default.svc.cluster.local`, `standbydatabase-sample.default.svc.cluster.local`, and short names).
+
+```bash
+kubectl wait -n "$NS" --for=condition=Ready \
+  certificate/sidb-primary-tcps certificate/sidb-standby-tcps --timeout=5m
+kubectl get secret sidb-primary-tcps-tls sidb-standby-tcps-tls -n "$NS" \
+  -o custom-columns=NAME:.metadata.name,TYPE:.type
+```
+
+**Expect:** both Secrets type `kubernetes.io/tls`.
+
+### 2. Primary SIDB (TDE + TCPS)
+
+Sample: [`singleinstancedatabase_dataguard_primary_tde_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_dataguard_primary_tde_tcps.yaml)
+
+```yaml
+apiVersion: database.oracle.com/v4
+kind: SingleInstanceDatabase
+metadata:
+  name: sidb-sample
+  namespace: default
+spec:
+  sid: ORCL1
+  edition: enterprise
+  createAs: primary
+  pdbName: orclpdb1
+  archiveLog: true
+  forceLog: true
+  flashBack: true
+  security:
+    secrets:
+      admin:
+        secretName: db-admin-secret
+        secretKey: oracle_pwd
+        keepSecret: true
+      tde:
+        secretName: tde-wallet-secret
+        secretKey: tde_wallet_pwd
+    tcps:
+      enabled: true
+      tlsSecret: sidb-primary-tcps-tls
+  image:
+    pullFrom: container-registry.oracle.com/database/enterprise_ru:latest
+    pullSecrets: ocr-reg-cred
+  persistence:
+    oradata:
+      size: 100Gi
+      storageClass: oci-bv
+      accessMode: ReadWriteOnce
+  dataguard:
+    prereqs:
+      enabled: true
+    standbySources:
+      - dbUniqueName: ORCLS
+        host: standbydatabase-sample.default.svc.cluster.local
+        tcpPort: 1521
+        tcpsEnabled: true
+        tcpsPort: 2484
+  replicas: 1
+```
+
+```bash
+kubectl apply -f singleinstancedatabase_dataguard_primary_tde_tcps.yaml
+kubectl wait --for=jsonpath='{.status.status}'=Healthy \
+  "singleinstancedatabase/$PRIMARY_DB" -n "$NS" --timeout=60m
+kubectl get svc "$PRIMARY_DB" -n "$NS"
+```
+
+### 3. Export primary TDE wallet → standby Secret
+
+The standby must receive the wallet from the **current** Healthy primary (not an old zip).
+
+```bash
+PRIMARY_POD=$(kubectl get pod -n "$NS" -l "app=$PRIMARY_DB" \
+  -o jsonpath='{.items[0].metadata.name}')
+
+WALLET_ROOT=$(kubectl exec -i "$PRIMARY_POD" -n "$NS" -c "$PRIMARY_DB" -- \
+  sqlplus -L -s / as sysdba <<'SQL'
+whenever sqlerror exit failure
+set heading off feedback off pages 0 verify off echo off linesize 400
+select value from v$parameter where name = 'wallet_root';
+exit
+SQL
+)
+WALLET_ROOT=$(printf '%s\n' "$WALLET_ROOT" | sed '/^[[:space:]]*$/d; s/^[[:space:]]*//; s/[[:space:]]*$//')
+test -n "$WALLET_ROOT" && kubectl exec "$PRIMARY_POD" -n "$NS" -c "$PRIMARY_DB" -- test -d "$WALLET_ROOT/tde"
+
+WALLET_DIR=$(mktemp -d)
+chmod 700 "$WALLET_DIR"
+kubectl cp -n "$NS" -c "$PRIMARY_DB" \
+  "$PRIMARY_POD:$WALLET_ROOT" "$WALLET_DIR/wallet-root"
+(cd "$WALLET_DIR/wallet-root" && zip -qr "$WALLET_DIR/standby-wallet.zip" tde)
+unzip -t "$WALLET_DIR/standby-wallet.zip"
+```
+
+Create/update the standby TDE Secret. For **23ai+**, include the password key (copy bytes from the primary TDE Secret—do not retype). For **19c** standby images, follow the upstream note: wallet zip only; do not set `secretKey` on the standby CR when the webhook rejects it.
+
+```bash
+# 23ai+ example shape — adjust names/keys to match your manifests
+kubectl create secret generic sidb-standby-tde-wallet -n "$NS" \
+  --from-file=wallet.zip="$WALLET_DIR/standby-wallet.zip" \
+  --from-literal=tde_wallet_pwd="$(kubectl get secret tde-wallet-secret -n "$NS" \
+    -o jsonpath='{.data.tde_wallet_pwd}' | base64 -d)" \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+Full copy/jq variants: [TDE Secret prerequisites](https://github.com/oracle/oracle-database-operator/blob/main/docs/sidb/prerequisites/PREREQUISITES.md#tde-secret) in the SIDB docs.
+
+### 4. Standby SIDB (TDE + TCPS)
+
+Sample: [`singleinstancedatabase_dataguard_standby_tde_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/singleinstancedatabase_dataguard_standby_tde_tcps.yaml)
+
+```yaml
+apiVersion: database.oracle.com/v4
+kind: SingleInstanceDatabase
+metadata:
+  name: standbydatabase-sample
+  namespace: default
+spec:
+  sid: ORCLS
+  edition: enterprise
+  createAs: standby
+  primarySource:
+    databaseRef: sidb-sample
+  security:
+    secrets:
+      admin:
+        secretName: db-admin-secret
+        secretKey: oracle_pwd
+        keepSecret: true
+      tde:
+        secretName: sidb-standby-tde-wallet
+        secretKey: tde_wallet_pwd
+        walletZipFileKey: wallet.zip
+        walletRoot: /opt/oracle/oradata/ORCLS/tdewallet
+    tcps:
+      enabled: true
+      tlsSecret: sidb-standby-tcps-tls
+  image:
+    pullFrom: container-registry.oracle.com/database/enterprise_ru:latest
+    pullSecrets: ocr-reg-cred
+  persistence:
+    oradata:
+      size: 100Gi
+      storageClass: oci-bv
+      accessMode: ReadWriteOnce
+  replicas: 1
+```
+
+```bash
+kubectl apply -f singleinstancedatabase_dataguard_standby_tde_tcps.yaml
+kubectl wait --for=jsonpath='{.status.status}'=Healthy \
+  "singleinstancedatabase/$STANDBY_DB" -n "$NS" --timeout=60m
+```
+
+### 5. Broker with TCP + TCPS endpoints
+
+Sample: [`dataguardbroker_same_cluster_tde_tcps.yaml`](https://github.com/oracle/oracle-database-operator/blob/main/config/samples/sidb/dataguardbroker_same_cluster_tde_tcps.yaml)
+
+Each member lists **both** protocols, for example:
+
+```yaml
+endpoints:
+  - name: tcp
+    host: sidb-sample.default.svc.cluster.local
+    port: 1521
+    protocol: TCP
+    serviceName: ORCL1
+  - name: tcps
+    host: sidb-sample.default.svc.cluster.local
+    port: 2484
+    protocol: TCPS
+    serviceName: ORCL1
+tcps:
+  enabled: true
+  clientWalletSecret: sidb-sample-dg-client-wallet
+```
+
+Standby member uses `standbydatabase-sample…` hosts and `ORCLS`. Topology defaults may set a Broker runner client wallet Secret—follow the sample and [TCPS client wallet placement](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb#tcps-client-wallet-placement-for-the-broker-runner) so DGMGRL can authenticate over TCPS.
+
+```bash
+kubectl apply -f dataguardbroker_same_cluster_tde_tcps.yaml
+kubectl get dataguardbroker "$DGB" -n "$NS" -o wide
+```
+
+### 6. Verify over TCPS aliases
+
+```bash
+RUNNER=$(kubectl get pods -n "$NS" \
+  -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | \
+  grep "^${DGB}-runner-" | head -n 1)
+kubectl exec "$RUNNER" -n "$NS" -- bash -c \
+  'grep -E "^[[:space:]]*[A-Za-z]" "$TNS_ADMIN/tnsnames.ora"'
+# Connect with the TCPS primary alias from that list (sample docs often use ORCL1TCPS)
+kubectl exec -it "$RUNNER" -n "$NS" -- dgmgrl /@ORCL1TCPS
+```
+
+```text
+SHOW CONFIGURATION;
+SHOW DATABASE 'ORCL1';
+SHOW DATABASE 'ORCLS';
+VALIDATE DATABASE 'ORCLS';
+```
+
+After switchover, reconnect with the **new** primary’s TCPS alias (for example `ORCLSTCPS` when `ORCLS` becomes primary).
+
+### Cross-cluster TCPS + NLB
+
+Same wallet-export and shared-CA ideas, plus ExternalDNS hostnames on internal NLBs and Broker applied in the standby cluster. Full runbook: [`DATAGUARD_CROSS_CLUSTER_TCPS_NLB.md`](https://github.com/oracle/oracle-database-operator/blob/main/docs/sidb/dataguard/DATAGUARD_CROSS_CLUSTER_TCPS_NLB.md). Separate admin access to each cluster: [`SEPARATE_CLUSTER_ACCESS.md`](https://github.com/oracle/oracle-database-operator/blob/main/docs/sidb/tcps-cert-manager/SEPARATE_CLUSTER_ACCESS.md).
 
 ---
 
@@ -569,10 +799,13 @@ kubectl delete dataguardbroker "$DGB" -n "$NS"
 | Standby never Healthy | Wrong `databaseRef` / password / image | Primary name, shared `oracle_pwd`, same image tag, pod logs |
 | Broker stuck unhealthy | Applied too early or wrong members | Both SIDBs Healthy; endpoints match Service DNS; regenerate YAML if renamed |
 | `readyForBroker` false | Standby not finished DG bootstrap | Standby status/events; wait; describe SIDB |
-| DGMGRL connect fails | Wrong alias after switchover | Re-list `tnsnames.ora`; use **current** primary alias |
+| DGMGRL connect fails | Wrong alias after switchover | Re-list `tnsnames.ora`; use **current** primary alias (TCPS: `…TCPS`) |
 | Switchover rejected | Lag / FSFO target / concurrent op | `VALIDATE DATABASE`; wait for SUCCESS; one op at a time |
 | Cross-cluster timeout | NLB / security lists / traffic policy | `nc` to peer NLB:1521; ExternalDNS; Local vs Cluster policy |
 | Patch no effect | CRD lacks `spec.operations` | `kubectl explain`; use DGMGRL path for that release |
+| Standby fails TDE open | Stale or wrong wallet zip | Re-export from **current** primary; 23ai+ password key must match primary |
+| TCPS handshake / Broker TCPS fail | SAN or CA mismatch; missing client wallet | Shared intermediate CA; leaf SANs; Broker `clientWalletSecret` placement |
+| Webhook rejects standby `tde.secretKey` | 19c standby image rule | Follow 19c note: wallet zip only without `secretKey` when required |
 
 ---
 
@@ -598,13 +831,17 @@ Physical standby open for real-time query depends on product licensing and open 
 
 This post is the **SIDB** Data Guard path. Multi-instance RAC topologies use different CRs and runbooks. For RAC-on-Kubernetes provisioning see [Provision Oracle RAC…](/blog/provision-oracle-rac-database-kubernetes-operator/).
 
+### Should I start with TCPS?
+
+Start with the **TCP Quick Start**, then add [TDE and TCPS](#same-cluster-data-guard-with-tde-and-tcps). Certificates, wallet export, and Broker client wallets are the usual first-time blockers—easier to debug after Broker already works over TCP.
+
 ---
 
 ## SEO-friendly takeaways
 
 **Primary question:** *How do I deploy Oracle Data Guard on Kubernetes with Oracle Database Operator?*  
 
-**Answer:** Install OraOperator 2.2+, create shared admin and image-pull Secrets, apply a primary SIDB with `archiveLog`/`forceLog` and `dataguard.prereqs.enabled`, wait until Healthy PRIMARY, apply a standby SIDB with `createAs: standby` and `primarySource.databaseRef`, wait until Healthy PHYSICAL_STANDBY, apply one `DataguardBroker` whose members match both Service DNS names, verify with DGMGRL `SHOW CONFIGURATION` / `VALIDATE DATABASE` from the Broker runner, then use `kubectl patch` (or DGMGRL) for switchover and other day-2 operations.
+**Answer:** Install OraOperator 2.2+, create shared admin and image-pull Secrets, apply a primary SIDB with `archiveLog`/`forceLog` and `dataguard.prereqs.enabled`, wait until Healthy PRIMARY, apply a standby SIDB with `createAs: standby` and `primarySource.databaseRef`, wait until Healthy PHYSICAL_STANDBY, apply one `DataguardBroker` whose members match both Service DNS names, verify with DGMGRL `SHOW CONFIGURATION` / `VALIDATE DATABASE` from the Broker runner, then use `kubectl patch` (or DGMGRL) for switchover and other day-2 operations. For encrypted listeners, add cert-manager TLS Secrets, TDE wallet export to the standby, and the TDE/TCPS samples with ports **1521** and **2484**.
 
 **Keywords covered naturally:** Oracle Data Guard Kubernetes, OraOperator DataguardBroker, SIDB physical standby, Data Guard switchover kubectl, FSFO Kubernetes Oracle, cross-cluster Data Guard NLB OKE.
 
