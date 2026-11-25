@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780" role="img" aria-labelledby="title desc">
+  <title id="title">Oracle Connection Manager with SIDB on Kubernetes</title>
+  <desc id="desc">ConnectionManager CR creates CMAN Deployment and Services; clients reach SIDB listeners through CMAN via next_hop or remote_listener registration.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#34d399"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24"/>
+    </marker>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1040" height="780" rx="16" fill="url(#bg)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">Oracle Connection Manager (CMAN) + SIDB on Kubernetes</text>
+  <text x="32" y="62" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">ConnectionManager CR · SQL\*Net proxy · next_hop or remote_listener · internal + external Services</text>
+
+  <rect x="24" y="84" width="992" height="560" rx="14" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="40" y="108" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.06em">KUBERNETES CLUSTER</text>
+
+  <g filter="url(#soft)">
+    <rect x="40" y="128" width="140" height="70" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="110" y="156" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600">You / CI</text>
+  <text x="110" y="176" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">apply CMAN CR</text>
+
+  <line x1="180" y1="163" x2="220" y2="163" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#soft)">
+    <rect x="222" y="118" width="220" height="90" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="332" y="144" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">CUSTOM RESOURCE</text>
+  <text x="332" y="166" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">ConnectionManager</text>
+  <text x="332" y="186" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="10">network.oracle.com/v4</text>
+
+  <line x1="442" y1="163" x2="488" y2="163" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#soft)">
+    <rect x="490" y="118" width="240" height="90" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="610" y="144" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">OPERATOR</text>
+  <text x="610" y="166" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">OraOperator CMAN ctrl</text>
+  <text x="610" y="186" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">preview in 2.3.0+</text>
+
+  <rect x="40" y="230" width="960" height="390" rx="12" fill="#0b1220" stroke="#475569" stroke-width="1.5"/>
+  <text x="56" y="254" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.05em">NAMESPACE: default (sample)</text>
+
+  <g filter="url(#soft)">
+    <rect x="56" y="276" width="200" height="130" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="156" y="304" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">CLIENTS</text>
+  <text x="156" y="328" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">SQL\*Plus / JDBC / UCP</text>
+  <text x="156" y="350" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Easy Connect via CMAN</text>
+  <text x="156" y="372" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">@//cman-ip:1521/apppdb1</text>
+  <text x="156" y="392" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">or in-cluster Service DNS</text>
+
+  <g filter="url(#soft)">
+    <rect x="290" y="276" width="240" height="130" rx="10" fill="url(#card)" stroke="#fb7185" stroke-width="1.5"/>
+  </g>
+  <text x="410" y="304" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">CMAN DEPLOYMENT</text>
+  <text x="410" y="328" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">cman-sidb</text>
+  <text x="410" y="350" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">replicas 1…N · cmctl</text>
+  <text x="410" y="372" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">generated rules OR file cman.ora</text>
+  <text x="410" y="392" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">ConfigMap for file mode</text>
+
+  <g filter="url(#soft)">
+    <rect x="568" y="276" width="200" height="130" rx="10" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="668" y="304" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">SIDB BACKEND</text>
+  <text x="668" y="328" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">sidb-sample</text>
+  <text x="668" y="350" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Healthy PRIMARY</text>
+  <text x="668" y="372" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">service apppdb1</text>
+  <text x="668" y="392" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">deploy BEFORE CMAN</text>
+
+  <g filter="url(#soft)">
+    <rect x="800" y="276" width="180" height="130" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="890" y="304" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">OPTIONAL PEER</text>
+  <text x="890" y="328" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">sidb-cman-peer</text>
+  <text x="890" y="350" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">apppdb2</text>
+  <text x="890" y="372" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">multi-backend samples</text>
+  <text x="890" y="392" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">alias next_hop</text>
+
+  <line x1="256" y1="340" x2="288" y2="340" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="530" y1="340" x2="566" y2="340" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#arrowAmber)"/>
+  <text x="548" y="328" text-anchor="middle" fill="#fbbf24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">forward</text>
+
+  <g filter="url(#soft)">
+    <rect x="56" y="430" width="280" height="100" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="196" y="460" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">INTERNAL SERVICE</text>
+  <text x="196" y="484" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">cman-sidb.default.svc :1521</text>
+  <text x="196" y="508" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">DB remote_listener target (gen)</text>
+
+  <g filter="url(#soft)">
+    <rect x="360" y="430" width="300" height="100" rx="10" fill="url(#card)" stroke="#f472b6" stroke-width="1.5"/>
+  </g>
+  <text x="510" y="460" text-anchor="middle" fill="#f9a8d4" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">EXTERNAL SERVICE (OPTIONAL)</text>
+  <text x="510" y="484" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">LoadBalancer / OCI NLB :1521</text>
+  <text x="510" y="508" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">status.externalEndpoint</text>
+
+  <g filter="url(#soft)">
+    <rect x="684" y="430" width="296" height="100" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="832" y="460" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">TWO ROUTING STYLES</text>
+  <text x="832" y="484" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">A) File next_hop — no remote_listener</text>
+  <text x="832" y="508" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">B) Generated rules + REGISTER</text>
+
+  <text x="56" y="560" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">CMAN does not create databases. Deploy Healthy SIDB(s) first. Prefer global next_hop for Data Guard / Broker switchover through CMAN.</text>
+  <text x="56" y="582" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Also routes to RAC SCAN / Oracle Restart / external listeners — same ConnectionManager CR, different backend hostnames.</text>
+
+  <rect x="24" y="668" width="992" height="88" rx="12" fill="#0b1220" stroke="#334155" stroke-width="1"/>
+  <text x="44" y="698" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600">Mental model</text>
+  <text x="44" y="720" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">1) SIDB owns the database  2) CMAN is a SQL\*Net front door  3) Choose generated registration vs file next_hop  4) Clients talk to CMAN Service, not the SIDB Service directly</text>
+  <text x="44" y="740" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Official docs: docs/cman · samples: cman-sidb-nexthop.yaml (Quick Start) · cman-sidb.yaml (generated)</text>
+</svg>

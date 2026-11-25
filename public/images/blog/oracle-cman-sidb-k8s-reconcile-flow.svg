@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 440" role="img" aria-labelledby="title desc">
+  <title id="title">CMAN provision flow with SIDB backends</title>
+  <desc id="desc">Deploy Healthy SIDB first, choose next_hop or generated rules path, apply ConnectionManager, verify cmctl, then client connect.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1040" height="440" rx="16" fill="url(#bg)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">Provision flow: SIDB first, then CMAN</text>
+  <text x="32" y="62" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Two paths after CMAN Healthy: next_hop clients connect immediately · generated rules need remote_listener + REGISTER</text>
+
+  <g filter="url(#soft)">
+    <rect x="28" y="100" width="150" height="140" rx="12" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="103" y="128" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">1 · SIDB</text>
+  <text x="103" y="152" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Deploy SIDB(s)</text>
+  <text x="103" y="172" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Healthy</text>
+  <text x="103" y="192" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Service exists</text>
+  <text x="103" y="212" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">PDB service name</text>
+  <text x="103" y="230" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">gate</text>
+
+  <line x1="178" y1="170" x2="208" y2="170" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#soft)">
+    <rect x="210" y="100" width="150" height="140" rx="12" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="285" y="128" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">2 · CHOOSE</text>
+  <text x="285" y="152" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">next_hop file</text>
+  <text x="285" y="172" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">OR generated</text>
+  <text x="285" y="192" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">rules</text>
+  <text x="285" y="212" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">OR peer alias</text>
+  <text x="285" y="230" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">pattern table</text>
+
+  <line x1="360" y1="170" x2="390" y2="170" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#soft)">
+    <rect x="392" y="100" width="160" height="140" rx="12" fill="url(#card)" stroke="#fb7185" stroke-width="1.5"/>
+  </g>
+  <text x="472" y="128" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">3 · APPLY</text>
+  <text x="472" y="152" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ConnectionManager</text>
+  <text x="472" y="172" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Deploy + Svcs</text>
+  <text x="472" y="192" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">wait Healthy</text>
+  <text x="472" y="212" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">external IP</text>
+  <text x="472" y="230" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">operator</text>
+
+  <line x1="552" y1="170" x2="582" y2="170" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#soft)">
+    <rect x="584" y="100" width="160" height="140" rx="12" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="664" y="128" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">4 · REGISTER?</text>
+  <text x="664" y="152" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">next_hop: skip</text>
+  <text x="664" y="172" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">generated:</text>
+  <text x="664" y="192" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">remote_listener</text>
+  <text x="664" y="212" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">+ REGISTER</text>
+  <text x="664" y="230" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">per DB</text>
+
+  <line x1="744" y1="170" x2="774" y2="170" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#soft)">
+    <rect x="776" y="100" width="150" height="140" rx="12" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="851" y="128" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700">5 · VERIFY</text>
+  <text x="851" y="152" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">cmctl show</text>
+  <text x="851" y="172" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">services</text>
+  <text x="851" y="192" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Easy Connect</text>
+  <text x="851" y="212" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">through CMAN</text>
+  <text x="851" y="230" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">you verify</text>
+
+  <line x1="926" y1="170" x2="956" y2="170" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g filter="url(#soft)">
+    <rect x="958" y="100" width="58" height="140" rx="12" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="987" y="165" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="700" transform="rotate(-90 987 175)">CLIENT</text>
+
+  <rect x="28" y="270" width="984" height="140" rx="12" fill="#0b1220" stroke="#334155" stroke-width="1"/>
+  <text x="48" y="302" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600">Gates and gotchas</text>
+  <text x="48" y="326" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">CMAN does not create SIDBs — missing peer Service = broken route · Generated path: never set remote_listener before CMAN resolves (ORA-00132)</text>
+  <text x="48" y="350" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Generated path: never test Easy Connect before REGISTER (ORA-12514) · Data Guard switchover through CMAN: prefer global next_hop, not remote_listener</text>
+  <text x="48" y="374" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Most samples reuse metadata.name cman-sidb — apply one per namespace or rename listener hostname in cman.ora.</text>
+</svg>
