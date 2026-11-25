@@ -1,8 +1,8 @@
 ---
 title: "Learning Path"
-description: "Curated hands-on labs for college students and new engineers — Go, Python, Java, Kubernetes, Terraform, CI/CD, AI."
+description: "Curated hands-on labs for college students and new engineers — Go, Python, Java, Ruby, Rust, Kubernetes, Terraform, CI/CD, AI, and Oracle Database on Kubernetes companion guides."
 source: "https://github.com/saurabhahuja71/learning-path"
-updated: 2026-07-29
+updated: 2026-11-25
 ---
 
 # Learning Path — Labs for College Students & New Engineers
@@ -12,13 +12,14 @@ Curated hands-on repositories from [saurabhahuja71](https://github.com/saurabhah
 These are **practice labs**, not production frameworks. Each track is ordered from easier → harder when possible. Start with one track; finish a lab before jumping tracks.
 
 > **Featured workshop:** [Python by Example — interactive Python in the browser with Pyodide](https://github.com/saurabhahuja71/python-by-example)
-> — start coding without installing Python.
+> — start coding without installing Python. Companion write-up: [onenova.in/blog/run-python-in-browser-pyodide](https://onenova.in/blog/run-python-in-browser-pyodide/).
 
 > **How to use this hub**
 > 1. Pick a track that matches what you want to learn.
 > 2. Open the lab repo → read its README → follow **Quick start**.
 > 3. When a lab still has a thin README, treat the code as the source of truth and open an issue if you get stuck.
 > 4. Prefer building something small of your own after each lab.
+> 5. Readable mirror of this hub: [onenova.in/learning-path](https://onenova.in/learning-path).
 
 ---
 
@@ -29,12 +30,13 @@ These are **practice labs**, not production frameworks. Each track is ordered fr
 | [Go](#1-go--apis) | Backend APIs, gRPC, workshops | 6 |
 | [Python](#2-python--data--apis) | Flask/FastAPI, data, ML intro | 7 |
 | [Java / Helidon](#3-java--helidon-microservices) | Microservices on the JVM | 8 |
-| [Cloud & Kubernetes](#4-cloud-kubernetes--containers) | Docker, K8s, operators | 5 |
-| [Terraform & IaC](#5-terraform--infrastructure-as-code) | Infra as code (OCI / Azure / AWS ideas) | 3 |
-| [CI/CD](#6-cicd) | GitHub Actions, pipelines | 1 |
+| [**Ruby & Rust**](#ruby--rust-from-scratch) | Full language curricula for Java/Python/Go engineers | 2 + comparisons |
+| [Cloud & Kubernetes](#4-cloud-kubernetes--containers) | Docker, K8s, operators | 5 + demos |
+| [Terraform & IaC](#5-terraform--infrastructure-as-code) | Infra as code (OCI / Azure / AWS ideas) | 3 + demos |
+| [CI/CD](#6-cicd) | GitHub Actions, pipelines | 2 + |
 | [AI & Agents](#7-ai--agents--mcp) | MCP, agents, Redis+AI | 4 |
 | [Oracle Linux & systems](#oracle-linux--systems) | OL tutorials, UEK, containers, QEMU, VPN | curated |
-| [Systems & fun projects](#8-systems--side-projects) | Raspberry Pi, VPN, Rust, VB | 6 |
+| [Systems & fun projects](#8-systems--side-projects) | Raspberry Pi, VPN, VB | 5 |
 | [Organizations review](#organizations-review--all-github-orgs) | Every org you belong to + cleanup notes | 7 orgs |
 | [Frontend / fullstack](#9-frontend--fullstack) | React + backend samples | 3 |
 
@@ -69,11 +71,12 @@ These are **practice labs**, not production frameworks. Each track is ordered fr
 | # | Lab | Level | What you'll practice | Status |
 |---|-----|-------|----------------------|--------|
 | 0 | [python-by-example](https://github.com/saurabhahuja71/python-by-example) — *Python in the browser (Pyodide)* | Beginner | Interactive Python playground | README ready |
-| 1 | [react-fastapi-todo](https://github.com/saurabhahuja71/react-fastapi-todo) — *FastAPI + React + PostgreSQL* | Intermediate | Full-stack todo, OpenAPI, Compose | README ready |
-| 2 | [pets-updates](https://github.com/saurabhahuja71/pets-updates) — *Flask Pets + GitHub workshop* | Beginner → Intermediate | Flask/SQLAlchemy + Copilot labs | README ready |
-| 3 | [sample-regression-model](https://github.com/saurabhahuja71/sample-regression-model) — *Linear regression (scikit-learn)* | Beginner (ML) | Bangalore rent prediction | README ready |
-| 4 | [datascienceandmachinelearning](https://github.com/saurabhahuja71/datascienceandmachinelearning) — *NumPy / Pandas notebooks* | Intermediate | Multi-day DS curriculum | README ready |
-| 5 | [algotrading-sample](https://github.com/saurabhahuja71/algotrading-sample) — *Algo trading learning stub* | Intermediate | Datetime + strategy scaffold | README ready |
+| 1 | [react-fastapi-todo](https://github.com/saurabhahuja71/react-fastapi-todo) — *FastAPI + React + PostgreSQL* | Intermediate | Full-stack todo, OpenAPI, Compose · [FastAPI async blog](https://onenova.in/blog/learn-fastapi-with-asynchronous-python/) | README ready |
+| 2 | [Microservice](https://github.com/saurabhahuja71/Microservice/tree/main/Day1) — *Flask REST API and Jinja demo* | Beginner | Flask routes, templates, forms, SQLite · [Flask learning blog](https://onenova.in/blog/learn-flask-with-a-small-rest-api/) | README ready |
+| 3 | [pets-updates](https://github.com/saurabhahuja71/pets-updates) — *Flask Pets + GitHub workshop* | Beginner → Intermediate | Flask/SQLAlchemy + Copilot labs | README ready |
+| 4 | [sample-regression-model](https://github.com/saurabhahuja71/sample-regression-model) — *Linear regression (scikit-learn)* | Beginner (ML) | Bangalore rent prediction | README ready |
+| 5 | [datascienceandmachinelearning](https://github.com/saurabhahuja71/datascienceandmachinelearning) — *NumPy / Pandas notebooks* | Intermediate | Multi-day DS curriculum | README ready |
+| 6 | [algotrading-sample](https://github.com/saurabhahuja71/algotrading-sample) — *Algo trading learning stub* | Intermediate | Datetime + strategy scaffold | README ready |
 
 **Containers companion:** [hello](https://github.com/saurabhahuja71/hello) — multi-arch Docker/buildah Hello World · README ready
 
@@ -106,6 +109,43 @@ Do them in order:
 
 ---
 
+## Ruby & Rust From Scratch
+
+**Full beginner → intermediate curricula** for engineers who already know Java, Python, or Go. Side-by-side comparisons throughout. Each language is its own repository so tooling stays clean.
+
+| # | Lab | Level | What you'll practice | Status |
+|---|-----|-------|----------------------|--------|
+| 1 | [ruby-from-scratch](https://github.com/saurabhahuja71/ruby-from-scratch) — *Modern Ruby from scratch* | Beginner → Intermediate | Syntax, OOP, blocks/procs, Enumerable, RSpec, metaprogramming, Sinatra API | **README ready** |
+| 2 | [Rust-learning](https://github.com/saurabhahuja71/Rust-learning) — *Rust from scratch (ownership-first)* | Beginner → Intermediate | Ownership/borrowing, structs/enums, traits, Result/Option, iterators, threads + Tokio, smart pointers | **README ready** |
+
+### Hub extras (this repo)
+
+| Resource | Description |
+|----------|-------------|
+| [tracks/ruby-and-rust](https://github.com/saurabhahuja71/learning-path/blob/main/tracks/ruby-and-rust/README.md) | Learning orders, how to study, clone commands |
+| [Comparisons](https://github.com/saurabhahuja71/learning-path/tree/main/tracks/ruby-and-rust/03-comparing-ruby-and-rust) | Memory (GC vs ownership), concurrency, errors, when to choose which, syntax cheatsheet |
+| [Capstones](https://github.com/saurabhahuja71/learning-path/blob/main/tracks/ruby-and-rust/04-real-world-projects/README.md) | Polyglot / real-world project ideas |
+| [Resources](https://github.com/saurabhahuja71/learning-path/blob/main/tracks/ruby-and-rust/resources.md) | Books, docs, communities |
+
+### Suggested path
+
+1. Read [tracks/ruby-and-rust](https://github.com/saurabhahuja71/learning-path/blob/main/tracks/ruby-and-rust/README.md)  
+2. Clone both curricula  
+3. **Option A (recommended for app engineers):** Ruby first → comparisons → Rust  
+4. **Option B:** Rust first (if you care about systems/performance)  
+5. Finish with a [capstone](https://github.com/saurabhahuja71/learning-path/blob/main/tracks/ruby-and-rust/04-real-world-projects/README.md)
+
+```bash
+git clone https://github.com/saurabhahuja71/ruby-from-scratch.git
+git clone https://github.com/saurabhahuja71/Rust-learning.git
+# optional: this hub for comparisons
+git clone https://github.com/saurabhahuja71/learning-path.git
+```
+
+**SEO / tags:** `ruby` `rust` `from-scratch` `ownership` `tutorial` `java` `python` `go` `learning-path`
+
+---
+
 ## 4. Cloud, Kubernetes & containers
 
 | # | Lab | Level | What you'll practice |
@@ -123,6 +163,18 @@ Do them in order:
 | [helm-basic](https://github.com/saurabhahuja71/helm-basic) | Minimal Helm chart |
 | [demo-container-app](https://github.com/saurabhahuja71/demo-container-app) | App + Docker + K8s |
 
+**Companion reading (Oracle Database on Kubernetes — production-style):**
+
+| Guide | Topic |
+|-------|--------|
+| [Provision Oracle Restart on Kubernetes](https://onenova.in/blog/provision-oracle-restart-database-kubernetes-operator/) | OraOperator Restart CR |
+| [Provision Oracle RAC on Kubernetes](https://onenova.in/blog/provision-oracle-rac-database-kubernetes-operator/) | OraOperator RAC CR |
+| [True Cache next to K8s apps](https://onenova.in/blog/deploy-oracle-true-cache-kubernetes-rac-primary/) | True Cache SIDB + RAC primary |
+| [Data Guard on Kubernetes](https://onenova.in/blog/deploy-oracle-data-guard-kubernetes-sidb/) | SIDB + DataguardBroker (+ TCPS) |
+| [CMAN + SIDB on Kubernetes](https://onenova.in/blog/deploy-oracle-cman-sidb-kubernetes/) | ConnectionManager SQL\*Net front door |
+| Hub overview blog | [Build a cloud-native learning path](https://onenova.in/blog/build-cloud-native-learning-path/) |
+
+Official operator docs: [oracle/oracle-database-operator](https://github.com/oracle/oracle-database-operator) · [docs/sidb](https://github.com/oracle/oracle-database-operator/tree/main/docs/sidb) · [docs/cman](https://github.com/oracle/oracle-database-operator/tree/main/docs/cman)
 
 ---
 
@@ -226,7 +278,8 @@ Personal working fork (for PRs only—prefer upstream for students): [saurabhahu
 |-----|--------|
 | [raspios-qemu](https://github.com/saurabhahuja71/raspios-qemu) | Boot Raspberry Pi OS under QEMU |
 | [oraclevpn](https://github.com/saurabhahuja71/oraclevpn) | VPN project |
-| [Rust-learning](https://github.com/saurabhahuja71/Rust-learning) | Rust practice |
+| [Rust-learning](https://github.com/saurabhahuja71/Rust-learning) | **Full Rust curriculum** — see [Ruby & Rust track](#ruby--rust-from-scratch) |
+| [ruby-from-scratch](https://github.com/saurabhahuja71/ruby-from-scratch) | **Full Ruby curriculum** — see [Ruby & Rust track](#ruby--rust-from-scratch) |
 | [vbcookbook](https://github.com/saurabhahuja71/vbcookbook) | Visual Builder cookbook |
 | [vbstudiolabs](https://github.com/saurabhahuja71/vbstudiolabs) | VB Studio labs |
 | [hello_flutter](https://github.com/saurabhahuja71/hello_flutter) | Flutter sample *(needs content)* |
@@ -249,12 +302,14 @@ If you are early in college and want a structured month:
 
 | Week | Focus | Labs |
 |------|--------|------|
-| 1 | Language fundamentals | `python-by-example` **or** `golang-workshop` |
-| 2 | First API | `react-fastapi-todo` **or** `grpc-golang-todo` |
+| 1 | Language fundamentals | `python-by-example` **or** `golang-workshop` **or** start [ruby-from-scratch](https://github.com/saurabhahuja71/ruby-from-scratch) / [Rust-learning](https://github.com/saurabhahuja71/Rust-learning) |
+| 2 | First API | `react-fastapi-todo` **or** `grpc-golang-todo` **or** Sinatra chapter in `ruby-from-scratch` |
 | 3 | Containers | `hello` + read about multi-arch builds |
 | 4 | Cloud / automation | `oci_terraform_samples` **or** `github-action-demo` |
 
 Stretch: pick one Helidon lab or `mcp-demo` in week 4 if you already know Java/AI.
+
+**Dedicated language deep-dive (8 weeks):** follow [Ruby & Rust From Scratch](#ruby--rust-from-scratch) — Ruby first or Rust first — using the comparisons in [`tracks/ruby-and-rust`](https://github.com/saurabhahuja71/learning-path/blob/main/tracks/ruby-and-rust/README.md).
 
 ---
 
@@ -402,16 +457,20 @@ Currently **only `oracle` is public** on the GitHub profile org list. Other orgs
 ### Related links
 
 - Student hub: [learning-path](https://github.com/saurabhahuja71/learning-path)
+- Readable mirror: [onenova.in/learning-path](https://onenova.in/learning-path)
 - Oracle Linux track: [Oracle Linux & systems](#oracle-linux--systems)
-- Profile: [saurabhahuja71.github.io](https://saurabhahuja71.github.io)
+- Website: [onenova.in](https://onenova.in)
+- Profile site (GitHub Pages): [saurabhahuja71.github.io](https://saurabhahuja71.github.io)
 
 ## About the author
 
-**Saurabh Ahuja** — Principal Member of Technical Staff (Oracle), cloud & infrastructure, **Oracle Linux**, Kubernetes, Go, operators, and Oracle container images.
+**Saurabh Ahuja** — Sr Principal Data Systems Engineer (Oracle), cloud & infrastructure, **Oracle Linux**, Kubernetes, Go, Oracle Database operators, and Oracle container images.
 
+- Website: [onenova.in](https://onenova.in)
+- Learning path: [onenova.in/learning-path](https://onenova.in/learning-path)
 - Profile: [saurabhahuja71](https://github.com/saurabhahuja71)
-- Site: [saurabhahuja71.github.io](https://saurabhahuja71.github.io)
-- LinkedIn: [saurabhahuja71](https://linkedin.com/in/saurabhahuja71)
+- GitHub Pages: [saurabhahuja71.github.io](https://saurabhahuja71.github.io)
+- LinkedIn: [saurabhahuja71](https://www.linkedin.com/in/saurabhahuja71)
 
 ---
 
@@ -421,4 +480,4 @@ Each lab keeps its **own** license (or none yet). Check the individual repositor
 
 ---
 
-*Progress: hub + curriculum + cleanup archives + **12 private demos opened public** → optional hard-delete scopes / remaining private thin demos.**Utilties/personal archive cleanup** → next: open private demos or admin:org/delete_repo for hard deletes.**Utilties archive + personal archive (122)** → next: open private demos or hard-delete after auth scopes.*
+*Hub status: curriculum tracks + Ruby/Rust map + public demos linked. Prefer opening issues on individual lab repos when a README is thin. Org cleanup (empty/experimental orgs) is tracked in the Organizations review section above.*
