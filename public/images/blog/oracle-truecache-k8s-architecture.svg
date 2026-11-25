@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780" role="img" aria-labelledby="title desc">
+  <title id="title">Oracle True Cache on Kubernetes with external RAC primary</title>
+  <desc id="desc">OKE cluster with application and True Cache SIDB collocated; Oracle Database Operator reconciles SingleInstanceDatabase; external RAC primary reaches True Cache through private NLB and DNS.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#34d399"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24"/>
+    </marker>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1040" height="780" rx="16" fill="url(#bg)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">Oracle True Cache on Kubernetes (OKE) + RAC primary</text>
+  <text x="32" y="62" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">App + True Cache in-cluster · RAC outside · SIDB CR · NLB callback · private DNS</text>
+
+  <!-- OKE cluster -->
+  <rect x="24" y="84" width="680" height="560" rx="14" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="40" y="108" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.06em">ORACLE KUBERNETES ENGINE (OKE)</text>
+
+  <!-- You / CI -->
+  <g filter="url(#soft)">
+    <rect x="40" y="128" width="140" height="70" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="110" y="156" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600">You / CI</text>
+  <text x="110" y="176" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">kubectl apply CR</text>
+
+  <line x1="180" y1="163" x2="230" y2="163" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- SIDB CR -->
+  <g filter="url(#soft)">
+    <rect x="232" y="120" width="190" height="86" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="327" y="146" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">CUSTOM RESOURCE</text>
+  <text x="327" y="168" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">SingleInstanceDatabase</text>
+  <text x="327" y="188" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="10">createAs: truecache</text>
+
+  <line x1="422" y1="163" x2="468" y2="163" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Operator -->
+  <g filter="url(#soft)">
+    <rect x="470" y="120" width="210" height="86" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="575" y="146" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">OPERATOR NS</text>
+  <text x="575" y="168" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">Oracle Database Operator</text>
+  <text x="575" y="188" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">SIDB controller ≥ 2.2</text>
+
+  <!-- Namespace tcdboper -->
+  <rect x="40" y="230" width="640" height="390" rx="12" fill="#0b1220" stroke="#475569" stroke-width="1.5"/>
+  <text x="56" y="254" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.05em">NAMESPACE: tcdboper (sample)</text>
+
+  <!-- App -->
+  <g filter="url(#soft)">
+    <rect x="56" y="276" width="180" height="120" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="146" y="304" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">APPLICATION</text>
+  <text x="146" y="328" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600">Helidon / UCP / JDBC</text>
+  <text x="146" y="348" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">RW pool → RAC SCAN</text>
+  <text x="146" y="368" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">RO pool → True Cache</text>
+  <text x="146" y="386" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">same cluster = low RTT</text>
+
+  <!-- Secrets / ConfigMap -->
+  <g filter="url(#soft)">
+    <rect x="256" y="276" width="180" height="120" rx="10" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="346" y="304" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">SECRETS + BLOB</text>
+  <text x="346" y="328" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">db-admin-secret</text>
+  <text x="346" y="346" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">tde-wallet-secret</text>
+  <text x="346" y="364" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ocr-pull</text>
+  <text x="346" y="382" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">ConfigMap: TC blob</text>
+
+  <!-- True Cache pod -->
+  <g filter="url(#soft)">
+    <rect x="456" y="276" width="200" height="120" rx="10" fill="url(#card)" stroke="#fb7185" stroke-width="1.5"/>
+  </g>
+  <text x="556" y="304" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">TRUE CACHE POD</text>
+  <text x="556" y="328" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">tck8node1-*</text>
+  <text x="556" y="348" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">SID TCK8DB1 · EE 26ai</text>
+  <text x="556" y="368" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">READ ONLY WITH APPLY</text>
+  <text x="556" y="386" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">PVC oradata (oci-bv)</text>
+
+  <!-- Services -->
+  <g filter="url(#soft)">
+    <rect x="56" y="420" width="280" height="100" rx="10" fill="url(#card)" stroke="#34d399" stroke-width="1.5"/>
+  </g>
+  <text x="196" y="448" text-anchor="middle" fill="#6ee7b7" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">IN-CLUSTER SERVICE</text>
+  <text x="196" y="472" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">svc/tck8node1 · ClusterIP :1521</text>
+  <text x="196" y="494" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">App RO datasource target</text>
+
+  <g filter="url(#soft)">
+    <rect x="360" y="420" width="296" height="100" rx="10" fill="url(#card)" stroke="#f472b6" stroke-width="1.5"/>
+  </g>
+  <text x="508" y="448" text-anchor="middle" fill="#f9a8d4" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">EXTERNAL NLB SERVICE</text>
+  <text x="508" y="472" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">svc/tck8node1-lb · NLB :1521</text>
+  <text x="508" y="494" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Primary callback + ExternalDNS</text>
+
+  <!-- Flow arrows inside NS -->
+  <line x1="236" y1="336" x2="256" y2="336" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="146" y1="396" x2="146" y2="418" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <line x1="556" y1="396" x2="508" y2="418" stroke="#f472b6" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="56" y="550" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Worker subnet: appsubnet · Services subnet: svcsubnet · Private DNS zone for TC hostname</text>
+  <text x="56" y="572" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Operator also watches Secrets / ConfigMap / endpoints; ExternalDNS registers NLB hostname</text>
+  <text x="56" y="594" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Optional nodeSelector (role=TC) pins True Cache to dedicated workers</text>
+
+  <!-- Outside: RAC -->
+  <rect x="724" y="84" width="292" height="560" rx="14" fill="none" stroke="#475569" stroke-width="2"/>
+  <text x="740" y="108" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" letter-spacing="0.06em">OUTSIDE CLUSTER</text>
+
+  <g filter="url(#soft)">
+    <rect x="744" y="128" width="252" height="150" rx="10" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="870" y="156" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">ORACLE RAC PRIMARY</text>
+  <text x="870" y="180" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700">Base DB Service / RAC</text>
+  <text x="870" y="202" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Oracle AI Database 26ai</text>
+  <text x="870" y="222" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ARCHIVELOG · EEHP/EEEP</text>
+  <text x="870" y="244" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">dbsubnet · SCAN :1521</text>
+  <text x="870" y="262" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">app service myappsvc…</text>
+
+  <g filter="url(#soft)">
+    <rect x="744" y="300" width="252" height="120" rx="10" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="870" y="330" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">PRIMARY → TRUE CACHE</text>
+  <text x="870" y="354" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Redo / block fetch</text>
+  <text x="870" y="374" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">via private NLB hostname</text>
+  <text x="870" y="396" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">log_archive_dest ROLE=TRUE_CACHE</text>
+
+  <g filter="url(#soft)">
+    <rect x="744" y="440" width="252" height="120" rx="10" fill="url(#card)" stroke="#a78bfa" stroke-width="1.5"/>
+  </g>
+  <text x="870" y="470" text-anchor="middle" fill="#c4b5fd" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600">BLOB PREP (DBCA)</text>
+  <text x="870" y="494" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">prepareTrueCacheConfigFile</text>
+  <text x="870" y="514" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">TDE wallet + pwdfile</text>
+  <text x="870" y="536" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">→ ConfigMap in tcdboper</text>
+
+  <!-- Cross arrows -->
+  <line x1="704" y1="470" x2="742" y2="470" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="704" y1="470" x2="656" y2="470" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="704" y1="360" x2="656" y2="470" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <text x="668" y="350" fill="#fbbf24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">callback</text>
+
+  <!-- Legend -->
+  <rect x="24" y="668" width="992" height="88" rx="12" fill="#0b1220" stroke="#334155" stroke-width="1"/>
+  <text x="44" y="698" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600">Mental model</text>
+  <text x="44" y="720" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">1) RAC stays on dedicated DB platform  2) True Cache SIDB lands next to the app  3) Primary reaches TC via NLB+DNS  4) App splits RW/RO pools</text>
+  <text x="44" y="740" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">Official operator path: docs/sidb True Cache · sample: singleinstancedatabase_truecache_external_rac.yaml</text>
+</svg>

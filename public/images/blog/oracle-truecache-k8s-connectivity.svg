@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 520" role="img" aria-labelledby="title desc">
+  <title id="title">True Cache connectivity paths</title>
+  <desc id="desc">Application dual pools to RAC SCAN and True Cache ClusterIP; primary callback through private NLB and DNS to True Cache listener.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#34d399"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fbbf24"/>
+    </marker>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1040" height="520" rx="16" fill="url(#bg)"/>
+  <text x="32" y="40" fill="#f8fafc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">Connectivity: who talks to whom on port 1521</text>
+  <text x="32" y="62" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Two-physical-connections app pattern · primary callback path · use NLB not HTTP LB</text>
+
+  <!-- App -->
+  <g filter="url(#soft)">
+    <rect x="40" y="100" width="220" height="160" rx="12" fill="url(#card)" stroke="#38bdf8" stroke-width="1.5"/>
+  </g>
+  <text x="150" y="132" text-anchor="middle" fill="#7dd3fc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">IN-CLUSTER APP</text>
+  <text x="150" y="158" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">UCP pool A (RW/any)</text>
+  <text x="150" y="180" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">→ RAC SCAN / myappsvc</text>
+  <text x="150" y="210" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">UCP pool B (read-only)</text>
+  <text x="150" y="232" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">→ TC ClusterIP / tcokenodes</text>
+
+  <!-- True Cache -->
+  <g filter="url(#soft)">
+    <rect x="410" y="100" width="240" height="160" rx="12" fill="url(#card)" stroke="#fb7185" stroke-width="1.5"/>
+  </g>
+  <text x="530" y="132" text-anchor="middle" fill="#fda4af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">TRUE CACHE SIDB</text>
+  <text x="530" y="158" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Listener :1521</text>
+  <text x="530" y="180" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">svc/tck8node1 ClusterIP</text>
+  <text x="530" y="202" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">svc/tck8node1-lb NLB</text>
+  <text x="530" y="232" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">service: tcokenodes.example.com</text>
+
+  <!-- RAC -->
+  <g filter="url(#soft)">
+    <rect x="780" y="100" width="220" height="160" rx="12" fill="url(#card)" stroke="#fbbf24" stroke-width="1.5"/>
+  </g>
+  <text x="890" y="132" text-anchor="middle" fill="#fcd34d" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">RAC PRIMARY</text>
+  <text x="890" y="158" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">SCAN :1521 / :6200 ONS</text>
+  <text x="890" y="180" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">PDB service myappsvc…</text>
+  <text x="890" y="202" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">log_archive_dest → TC</text>
+  <text x="890" y="232" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">ROLE=TRUE_CACHE</text>
+
+  <!-- Arrows top row -->
+  <line x1="260" y1="150" x2="778" y2="150" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <text x="520" y="142" text-anchor="middle" fill="#fbbf24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">RW / writes / misc</text>
+
+  <line x1="260" y1="220" x2="408" y2="220" stroke="#34d399" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <text x="334" y="212" text-anchor="middle" fill="#34d399" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">RO queries</text>
+
+  <!-- NLB box -->
+  <g filter="url(#soft)">
+    <rect x="410" y="300" width="240" height="90" rx="12" fill="url(#card)" stroke="#f472b6" stroke-width="1.5"/>
+  </g>
+  <text x="530" y="334" text-anchor="middle" fill="#f9a8d4" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700">OCI PRIVATE NLB</text>
+  <text x="530" y="358" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11">tck8node1.tcinternal.example.com</text>
+  <text x="530" y="378" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">L4 · long-lived TCP · ExternalDNS</text>
+
+  <line x1="780" y1="200" x2="650" y2="300" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowAmber)"/>
+  <line x1="530" y1="300" x2="530" y2="262" stroke="#f472b6" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="700" y="270" fill="#fbbf24" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10">primary callback</text>
+
+  <!-- Bottom note -->
+  <rect x="40" y="420" width="960" height="76" rx="12" fill="#0b1220" stroke="#334155" stroke-width="1"/>
+  <text x="60" y="448" fill="#e2e8f0" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600">Do not expose True Cache with an OCI HTTP Load Balancer</text>
+  <text x="60" y="472" fill="#94a3b8" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12">Use Network Load Balancer (NLB) for database listeners. One-logical-connection apps need service association (autoTCServiceRegistration or manual helper).</text>
+</svg>
