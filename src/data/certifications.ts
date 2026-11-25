@@ -38,6 +38,13 @@ export const publications: Certification[] = [
     description: 'Technical whitepaper on deploying Oracle Kubernetes Engine on C@C / PCA.',
     url: 'https://www.oracle.com/a/ocom/docs/cloud/deploying-oke-on-compute-cloud@customer-or-pca.pdf',
   },
+  {
+    title: 'Deploying Oracle True Cache on Kubernetes with an Oracle RAC Database Primary',
+    issuer: 'Oracle MAA / Database',
+    date: '2026',
+    description: 'Architecture guide for True Cache in Kubernetes with an external RAC primary.',
+    url: 'https://www.oracle.com/a/otn/docs/deploy-truecache-k8s-for-oracle-rac.pdf',
+  },
 ];
 
 export const certifications: Certification[] = [
@@ -63,6 +70,6 @@ export const achievements: Achievement[] = [
     date: 'Ongoing',
     org: 'Oracle',
     description:
-      'Contributions to RAC, Podman, OLCNE, and OKE architecture documentation and whitepapers.',
+      'Contributions to RAC, Podman, OLCNE, OKE, and True Cache on Kubernetes documentation and whitepapers.',
   },
 ];
